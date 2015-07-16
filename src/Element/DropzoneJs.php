@@ -9,44 +9,41 @@ namespace Drupal\dropzonejs\Element;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element;
-use Drupal\Core\Render\Element\File;
+use Drupal\Core\Render\Element\FormElement;
 
 /**
  * Provides a DropzoneJS atop of the file element.
  *
+ * @todo Remove updated_files from the values array.
+ *
  * @FormElement("dropzonejs")
  */
-class DropzoneJs extends File {
+class DropzoneJs extends FormElement {
   /**
    * {@inheritdoc}
    */
   public function getInfo() {
     $class = get_class($this);
-    return array(
+    return [
       '#input' => TRUE,
       '#multiple' => FALSE,
-      '#process' => array(
-        array($class, 'processDropzoneJs'),
-      ),
+      '#process' => [[$class, 'processDropzoneJs']],
       '#size' => 60,
-      '#pre_render' => array(
-        array($class, 'preRenderDropzoneJs'),
-      ),
+      '#pre_render' => [[$class, 'preRenderDropzoneJs']],
       '#theme' => 'dropzonejs',
-      '#theme_wrappers' => array('form_element'),
-    );
+      '#theme_wrappers' => ['form_element'],
+      '#attached' => ['library' => ['dropzonejs/dropzonejs']],
+    ];
   }
 
   /**
    * Processes a dropzone upload element, make use of #multiple if present.
    */
   public static function processDropzoneJs(&$element, FormStateInterface $form_state, &$complete_form) {
-    $element['#attached']['library'][] = 'dropzonejs/dropzonejs';
     $element['uploaded_files'] = [
       '#type' => 'hidden',
       // @todo Handle defaults.
-      '#value' => '',
+      '#default_value' => '',
     ];
 
     return $element;
@@ -54,9 +51,6 @@ class DropzoneJs extends File {
 
   /**
    * Prepares a #type 'dropzone' render element for dropzonejs.html.twig.
-   *
-   * For assistance with handling the uploaded file correctly, see the API
-   * provided by file.inc.
    *
    * @param array $element
    *   An associative array containing the properties of the element.
@@ -69,5 +63,29 @@ class DropzoneJs extends File {
   public static function preRenderDropzoneJs($element) {
     static::setAttributes($element, ['dropzone-enable']);
     return $element;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
+    $file_names = [];
+    $return = NULL;
+
+    if ($input !== FALSE) {
+      $user_input = $form_state->getUserInput();
+
+      if (!empty($user_input['uploaded_files'])) {
+        $file_names = array_filter(explode(';', $user_input['uploaded_files']));
+        $temp_path = \Drupal::config('system.file')->get('path.temporary');
+
+        foreach ($file_names as $name) {
+          $return[] = "$temp_path/$name";
+        }
+      }
+      $form_state->setValueForElement($element, $return);
+
+      return $return;
+    }
   }
 }
