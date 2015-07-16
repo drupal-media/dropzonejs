@@ -1,0 +1,10 @@
+dropzonejs:
+  version: VERSION
+  js:
+    # @todo add option to include uncompressed
+    assets/dropzone/dist/min/dropzone.min.js: {}
+    js/dropzone.integration.js: {}
+  css:
+    component:
+      # @todo add option to include uncompressed
+      assets/dropzone/dist/min/dropzone.min.css: {}
