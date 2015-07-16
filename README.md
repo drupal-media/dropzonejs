@@ -1,6 +1,6 @@
 ## About DropzoneJS
 
-This is the Drupa 8 integration for [DropzoneJS](http://www.dropzonejs.com/).
+This is the Drupal 8 integration for [DropzoneJS](http://www.dropzonejs.com/).
 
 ###Project page:
 Currently still without a drupal.org repository (https://
