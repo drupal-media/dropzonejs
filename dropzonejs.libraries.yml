@@ -3,8 +3,8 @@ dropzonejs:
   website: http://www.dropzonejs.com
   version: 4.0.1
   license:
-    name: BSD
-    url: https://github.com/yui/yui3/blob/master/LICENSE.md
+    name: MIT
+    url: https://github.com/enyo/dropzone/blob/master/LICENSE
     gpl-compatible: true
   js:
     /libraries/dropzone/dist/min/dropzone.min.js: {}
