@@ -1,10 +1,17 @@
 dropzonejs:
-  version: VERSION
+  title: 'Dropzonejs'
+  website: http://www.dropzonejs.com
+  version: 4.0.1
+  license:
+    name: BSD
+    url: https://github.com/yui/yui3/blob/master/LICENSE.md
+    gpl-compatible: true
   js:
-    # @todo add option to include uncompressed
-    assets/dropzone/dist/min/dropzone.min.js: {}
-    js/dropzone.integration.js: {}
+    /libraries/dropzone/dist/min/dropzone.min.js: {}
   css:
     component:
-      # @todo add option to include uncompressed
-      assets/dropzone/dist/min/dropzone.min.css: {}
+      /libraries/dropzone/dist/min/dropzone.min.css: {}
+integration:
+  version: VERSION
+  js:
+    js/dropzone.integration.js: {}

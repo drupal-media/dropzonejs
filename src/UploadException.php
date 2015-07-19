@@ -37,14 +37,9 @@ class UploadExceptionn extends \Exception {
   const FILENAME_ERROR = 105;
 
   /**
-   * Error with temporary file name.
-   */
-  const REQUEST_ERROR = 106;
-
-  /**
    * File upload resulted in error.
    */
-  const FILE_UPLOAD_ERROR = 107;
+  const FILE_UPLOAD_ERROR = 106;
 
   /**
    * Code to error message mapping.
@@ -57,7 +52,6 @@ class UploadExceptionn extends \Exception {
     self::MOVE_ERROR => 'Failed to move uploaded file.',
     self::DESTINATION_FOLDER_ERROR => 'Failed to open temporary directory.',
     self::FILENAME_ERROR => 'Invalid temporary file name.',
-    self::REQUEST_ERROR => 'The request does not contain a UploadedFile object.',
     self::FILE_UPLOAD_ERROR => 'The file upload resulted in an error on php level. See http://php.net/manual/en/features.file-upload.errors.php',
   );
 

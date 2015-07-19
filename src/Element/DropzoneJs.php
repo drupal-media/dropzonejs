@@ -14,6 +14,18 @@ use Drupal\Core\Render\Element\FormElement;
 /**
  * Provides a DropzoneJS atop of the file element.
  *
+ * Configuration options are:
+ * - #title
+ *   The main field title.
+ * - #description
+ *   Description under the field.
+ * - #dropzone_description
+ *   Will be visible inside the upload area.
+ * - #max_filesize
+ *   Used by dropzonejs and expressed in MB. See
+ *   http://www.dropzonejs.com/#config-maxFilesize
+ *
+ *
  * @todo Remove updated_files from the values array.
  *
  * @FormElement("dropzonejs")
@@ -32,7 +44,9 @@ class DropzoneJs extends FormElement {
       '#pre_render' => [[$class, 'preRenderDropzoneJs']],
       '#theme' => 'dropzonejs',
       '#theme_wrappers' => ['form_element'],
-      '#attached' => ['library' => ['dropzonejs/dropzonejs']],
+      '#attached' => [
+        'library' => ['dropzonejs/dropzonejs', 'dropzonejs/integration']
+      ],
     ];
   }
 
@@ -54,13 +68,23 @@ class DropzoneJs extends FormElement {
    *
    * @param array $element
    *   An associative array containing the properties of the element.
-   *   Properties used: #title, #name, #size, #description, #required,
-   *   #attributes.
+   *   Properties used: #title, #description, #required, #attributes,
+   *   #dropzone_description, #max_filesize.
    *
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
   public static function preRenderDropzoneJs($element) {
+    $element['#attached']['drupalSettings']['dropzonejs'] = [
+      'upload_path' => base_path() . 'dropzonejs/upload',
+      'instances' => [
+        $element['#id'] => [
+          'maxFilesize' => $element['#max_filesize'],
+          'dictDefaultMessage' => $element['#dropzone_description']
+        ],
+      ],
+    ];
+
     static::setAttributes($element, ['dropzone-enable']);
     return $element;
   }

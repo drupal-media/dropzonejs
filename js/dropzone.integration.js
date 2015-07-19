@@ -2,6 +2,9 @@
  * @file dropzone.integration.js
  *
  * Defines the behaviors needed for dropzonejs integration.
+ *
+ * @todo Implement maxfilesexceeded.
+ *
  */
 (function ($, Drupal, drupalSettings) {
   "use strict";
@@ -13,19 +16,18 @@
       selector.addClass("dropzone");
 
       // Initiate dropzonejs.
-      var dropzoneInstance = new Dropzone("#" + selector.attr("id"), {
-        // @todo we should get all this from somewhere.
-        url: "/drupal-8-media/dropzonejs/upload",
-        maxFilesize: 2,
+      var config = {
+        url: drupalSettings.dropzonejs.upload_path,
         addRemoveLinks: true,
-      });
+      };
+      var instanceConfig = drupalSettings.dropzonejs.instances[selector.attr('id')];
+      var dropzoneInstance = new Dropzone("#" + selector.attr("id"), $.extend({}, instanceConfig, config));
 
       // React on add file. Add only accepted files.
       dropzoneInstance.on("addedfile", function(file) {
         var uploadedFilesElement = selector.siblings(':hidden');
         var currentValue = uploadedFilesElement.attr('value');
 
-        // @todo handle files with validaiton errors.
         uploadedFilesElement.attr('value', currentValue + file.name + ';');
       });
 

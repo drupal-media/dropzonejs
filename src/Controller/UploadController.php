@@ -7,6 +7,7 @@
 
 namespace Drupal\dropzonejs\Controller;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\dropzonejs\UploadException;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Handles requests that dropzone issues when uploading files.
@@ -52,17 +54,23 @@ class UploadController extends ControllerBase {
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Request object.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
+   *   Config factory.
    */
-  public function __construct(Request $request) {
+  public function __construct(Request $request, ConfigFactoryInterface $config) {
     $this->request = $request;
-    $this->temporaryUploadLocation = \Drupal::config('system.file')->get('path.temporary');
+    $tmp_override = $config->get('dropzonejs.settings')->get('tmp_dir');
+    $this->temporaryUploadLocation = ($tmp_override) ? $tmp_override : $config->get('system.file')->get('path.temporary');
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('request_stack')->getCurrentRequest());
+    return new static(
+      $container->get('request_stack')->getCurrentRequest(),
+      $container->get('config.factory')
+    );
   }
 
   /**
@@ -77,17 +85,6 @@ class UploadController extends ControllerBase {
     catch (UploadException $e) {
       return $e->getErrorResponse();
     }
-
-    // Return JSON-RPC response.
-    // @todo Not sure if we need this.
-    return new JsonResponse(
-      array(
-        'jsonrpc' => '2.0',
-        'result' => NULL,
-        'id' => 'id',
-      ),
-      200
-    );
   }
 
   /**
@@ -118,7 +115,6 @@ class UploadController extends ControllerBase {
    */
   protected function getFilename(UploadedFile $file) {
     if (empty($this->filename)) {
-      // @todo I am not sure why plupload gets 'name' here ($this->request->request->get('name')).
       $this->filename = $file->getClientOriginalName();
 
       // Check the file name for security reasons; it must contain letters,
@@ -135,12 +131,13 @@ class UploadController extends ControllerBase {
    * Handles multipart uploads.
    *
    * @throws \Drupal\dropzonejs\UploadException
+   * @throws Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    */
   protected function handleUpload() {
     /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
     $file = $this->request->files->get('file');
     if (!$file instanceof UploadedFile) {
-      throw new UploadException(UploadException::REQUEST_ERROR);
+      throw new AccessDeniedHttpException();
     }
     elseif ($file->getError() != UPLOAD_ERR_OK) {
       throw new UploadException(UploadException::FILE_UPLOAD_ERROR);
@@ -148,7 +145,6 @@ class UploadController extends ControllerBase {
 
     // Open temp file.
     $tmp = $this->temporaryUploadLocation . $this->getFilename($file);
-    // @todo Is the 'b' at the end of the mode ok?
     if (!($out = fopen("{$this->temporaryUploadLocation}/{$this->getFilename($file)}", $this->request->request->get('chunk', 0) ? 'ab' : 'wb'))) {
       throw new UploadException(UploadException::OUTPUT_ERROR);
     }
@@ -165,10 +161,8 @@ class UploadController extends ControllerBase {
     }
 
     // Be nice and keep everything nice and clean.
+    // @todo when implementing multipart dont forget to drupal_unlink.
     fclose($in);
     fclose($out);
-    if ($is_multipart) {
-      drupal_unlink($multipart_file['tmp_name']);
-    }
   }
 }
