@@ -93,7 +93,7 @@ class UploadController extends ControllerBase {
    * @return bool
    *   TRUE if destination folder looks OK and FALSE otherwise.
    *
-   * @throws \Drupal\plupload\UploadException
+   * @throws \Drupal\dropzonejs\UploadException
    */
   protected function prepareTemporaryUploadDestination() {
     $writable = file_prepare_directory($this->temporaryUploadLocation, FILE_CREATE_DIRECTORY);
@@ -111,7 +111,7 @@ class UploadController extends ControllerBase {
    * @param \Symfony\Component\HttpFoundation\File\UploadedFile $file
    *   An instance of UploadedFile.
    *
-   * @throws \Drupal\plupload\UploadException
+   * @throws \Drupal\dropzonejs\UploadException
    */
   protected function getFilename(UploadedFile $file) {
     if (empty($this->filename)) {
