@@ -1,0 +1,7 @@
+name: dropzonejs
+type: module
+description: DropzoneJS
+core: 8.x
+package: Media
+dependencies:
+  - file
