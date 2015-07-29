@@ -8,6 +8,7 @@
 namespace Drupal\dropzonejs\Element;
 
 use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\FormElement;
 
@@ -25,8 +26,9 @@ use Drupal\Core\Render\Element\FormElement;
  *   Used by dropzonejs and expressed in MB. See
  *   http://www.dropzonejs.com/#config-maxFilesize
  *
- *
- * @todo Remove updated_files from the values array.
+ * When submitted the element returns an array of temporary file locations. It's
+ * the duty of the environment that implements this element to handle the
+ * uploaded files.
  *
  * @FormElement("dropzonejs")
  */
@@ -94,17 +96,17 @@ class DropzoneJs extends FormElement {
    */
   public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
     $file_names = [];
-    $return = NULL;
+    $return['uploaded_files'] = NULL;
 
     if ($input !== FALSE) {
-      $user_input = $form_state->getUserInput();
+      $user_input = NestedArray::getValue($form_state->getUserInput(), $element['#parents'], $key_exists);
 
       if (!empty($user_input['uploaded_files'])) {
         $file_names = array_filter(explode(';', $user_input['uploaded_files']));
         $temp_path = \Drupal::config('system.file')->get('path.temporary');
 
         foreach ($file_names as $name) {
-          $return[] = "$temp_path/$name";
+          $return['uploaded_files'][] = "$temp_path/$name";
         }
       }
       $form_state->setValueForElement($element, $return);
