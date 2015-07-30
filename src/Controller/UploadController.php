@@ -85,6 +85,14 @@ class UploadController extends ControllerBase {
     catch (UploadException $e) {
       return $e->getErrorResponse();
     }
+
+    // Return JSON-RPC response.
+    // Controllers should return a response.
+    return new JsonResponse([
+      'jsonrpc' => '2.0',
+      'result' => NULL,
+      'id' => 'id',
+    ], 200);
   }
 
   /**
@@ -144,7 +152,7 @@ class UploadController extends ControllerBase {
     }
 
     // Open temp file.
-    $tmp = $this->temporaryUploadLocation . $this->getFilename($file);
+    $tmp = "{$this->temporaryUploadLocation}/{$this->getFilename($file)}";
     if (!($out = fopen("{$this->temporaryUploadLocation}/{$this->getFilename($file)}", $this->request->request->get('chunk', 0) ? 'ab' : 'wb'))) {
       throw new UploadException(UploadException::OUTPUT_ERROR);
     }
