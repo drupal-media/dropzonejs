@@ -78,7 +78,7 @@ class DropzoneJs extends FormElement {
    */
   public static function preRenderDropzoneJs($element) {
     $element['#attached']['drupalSettings']['dropzonejs'] = [
-      'upload_path' => base_path() . 'dropzonejs/upload',
+      'upload_path' => \Drupal::url('dropzonejs.upload'),
       'instances' => [
         $element['#id'] => [
           'maxFilesize' => $element['#max_filesize'],
