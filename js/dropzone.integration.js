@@ -24,11 +24,15 @@
       var dropzoneInstance = new Dropzone("#" + selector.attr("id"), $.extend({}, instanceConfig, config));
 
       // React on add file. Add only accepted files.
-      dropzoneInstance.on("addedfile", function(file) {
+      dropzoneInstance.on("success", function(file, response) {
         var uploadedFilesElement = selector.siblings(':hidden');
         var currentValue = uploadedFilesElement.attr('value');
 
-        uploadedFilesElement.attr('value', currentValue + file.name + ';');
+        // The file is transliterated on upload. The element has to reflect
+        // the real filename.
+        file.processedName = response.result;
+
+        uploadedFilesElement.attr('value', currentValue + response.result + ';');
       });
 
       // React on file removing.
@@ -40,7 +44,7 @@
         if (currentValue.length) {
           var fileNames = currentValue.split(";");
           for (var i in fileNames) {
-            if (fileNames[i] == file.name) {
+            if (fileNames[i] == file.processedName) {
               fileNames.splice(i,1);
               break;
             }

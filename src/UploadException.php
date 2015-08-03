@@ -2,14 +2,14 @@
 
 /**
  * @file
- * Contains \Drupal\dropzonejs\DropzoneJsUploadException.
+ * Contains \Drupal\dropzonejs\UploadException.
  */
 
 namespace Drupal\dropzonejs;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-class UploadExceptionn extends \Exception {
+class UploadException extends \Exception {
 
   /**
    * Error with input stream.

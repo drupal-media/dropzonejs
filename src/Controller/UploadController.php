@@ -10,6 +10,7 @@ namespace Drupal\dropzonejs\Controller;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Transliteration\PhpTransliteration;
 use Drupal\dropzonejs\UploadException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -20,6 +21,11 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Handles requests that dropzone issues when uploading files.
+ *
+ * The uploaded file will be stored in the configured tmp folder and will be
+ * added a tmp extension. Further filename processing will be done in
+ * Drupal\dropzonejs\Element::valueCallback. This means that the final
+ * filename will be provided only after that callback.
  */
 class UploadController extends ControllerBase {
 
@@ -50,17 +56,27 @@ class UploadController extends ControllerBase {
   protected $filename;
 
   /**
+   * Transliteration service.
+   *
+   * @var \Drupal\Core\Transliteration\PhpTransliteration
+   */
+  protected $transliteration;
+
+  /**
    * Constructs dropzone upload controller route controller.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Request object.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Config factory.
+   * @param \Drupal\Core\Transliteration\PhpTransliteration $transliteration
+   *   Transliteration service.
    */
-  public function __construct(Request $request, ConfigFactoryInterface $config) {
+  public function __construct(Request $request, ConfigFactoryInterface $config, PhpTransliteration $transliteration) {
     $this->request = $request;
     $tmp_override = $config->get('dropzonejs.settings')->get('tmp_dir');
     $this->temporaryUploadLocation = ($tmp_override) ? $tmp_override : $config->get('system.file')->get('path.temporary');
+    $this->trasliteration = $transliteration;
   }
 
   /**
@@ -69,7 +85,8 @@ class UploadController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('request_stack')->getCurrentRequest(),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('transliteration')
     );
   }
 
@@ -90,7 +107,7 @@ class UploadController extends ControllerBase {
     // Controllers should return a response.
     return new JsonResponse([
       'jsonrpc' => '2.0',
-      'result' => NULL,
+      'result' => $this->filename,
       'id' => 'id',
     ], 200);
   }
@@ -123,13 +140,23 @@ class UploadController extends ControllerBase {
    */
   protected function getFilename(UploadedFile $file) {
     if (empty($this->filename)) {
-      $this->filename = $file->getClientOriginalName();
+      $original_name = $file->getClientOriginalName();
 
-      // Check the file name for security reasons; it must contain letters,
-      // numbers and underscores.
-      if (!preg_match('/[\w\.]/', $this->filename)) {
+      // There should be a filename and it should not contain a semicolon,
+      // which we use to separate filenames.
+      if (!isset($original_name)) {
         throw new UploadException(UploadException::FILENAME_ERROR);
       }
+
+      // Transliterate.
+      $processed_filename = \Drupal::transliteration()->transliterate($original_name);
+
+      // For security reasons append the txt extension. It will be removed in
+      // Drupal\dropzonejs\Element::valueCallback when we will know the valid
+      // extension and we will be abble to properly sanitaze the filename.
+      $processed_filename = $processed_filename . '.txt';
+
+      $this->filename = $processed_filename;
     }
 
     return $this->filename;
