@@ -93,7 +93,7 @@ class DropzoneJs extends FormElement {
         $element['#id'] => [
           'maxFilesize' => $element['#max_filesize'],
           'dictDefaultMessage' => $element['#dropzone_description'],
-          'acceptedFiles' => '.' . str_replace(' ', ',.', self::getValidExtensions()),
+          'acceptedFiles' => '.' . str_replace(' ', ',.', self::getValidExtensions($element)),
         ],
       ],
     ];
@@ -125,7 +125,7 @@ class DropzoneJs extends FormElement {
           // security reasons. Because here we know the acceptable extensions
           // we can remove that extension and sanitize the filename.
           $name = self::fixTmpFilename($name);
-          $name = file_munge_filename($name, self::getValidExtensions());
+          $name = file_munge_filename($name, self::getValidExtensions($element));
 
           // Finaly rename the file and add it to results.
           $new_filepath = "$temp_path/$name";
@@ -148,10 +148,13 @@ class DropzoneJs extends FormElement {
   /**
    * Gets valid file extensions for this element.
    *
+   * @param array $element
+   *   The element array.
+   *
    * @return string
    *   A space separated list of extensions.
    */
-  public static function getValidExtensions() {
+  public static function getValidExtensions($element) {
     return isset($element['#extensions']) ? $element['#extensions'] : self::DEFAULT_VALID_EXTENSIONS;
   }
 

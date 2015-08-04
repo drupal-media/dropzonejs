@@ -167,6 +167,8 @@ class UploadController extends ControllerBase {
    *
    * @throws \Drupal\dropzonejs\UploadException
    * @throws Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
+   *
+   * @todo Handle all the possible upload errors. See file_save_upload().
    */
   protected function handleUpload() {
     /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
