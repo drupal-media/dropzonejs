@@ -61,6 +61,13 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   protected $renderer;
 
   /**
+   * Config factory service.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * Construct the DropzoneUploadSave object.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
@@ -71,15 +78,17 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
    *   The file system service.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
    *   The logger factory service.
-   * @param Drupal\Core\Render\RendererInterface $renderer
+   * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    */
-  public function __construct(EntityManagerInterface $entity_manager, MimeTypeGuesserInterface $mimetype_guesser, FileSystemInterface $file_system, LoggerChannelFactoryInterface $logger_factory, RendererInterface $renderer) {
+  public function __construct(EntityManagerInterface $entity_manager, MimeTypeGuesserInterface $mimetype_guesser, FileSystemInterface $file_system, LoggerChannelFactoryInterface $logger_factory, RendererInterface $renderer, ConfigFactoryInterface $config_factory) {
     $this->entityManager = $entity_manager;
     $this->mimeTypeGuesser = $mimetype_guesser;
     $this->fileSystem = $file_system;
     $this->logger = $logger_factory->get('dropzonejs');
     $this->renderer = $renderer;
+    $this->config = $config_factory;
   }
 
   /**
@@ -162,7 +171,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
    * {@inheritdoc}
    */
   public function renameExecutableExtensions(FileInterface $file) {
-    if (!\Drupal::config('system.file')->get('allow_insecure_uploads') && preg_match('/\.(php|pl|py|cgi|asp|js)(\.|$)/i', $file->getFilename()) && (substr($file->getFilename(), -4) != '.txt')) {
+    if (!$this->configFactory->get('system.file')->get('allow_insecure_uploads') && preg_match('/\.(php|pl|py|cgi|asp|js)(\.|$)/i', $file->getFilename()) && (substr($file->getFilename(), -4) != '.txt')) {
       $file->setMimeType('text/plain');
       // The destination filename will also later be used to create the URI.
       $file->setFilename($file->getFilename() . '.txt');
