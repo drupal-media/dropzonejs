@@ -7,6 +7,7 @@
 
 namespace Drupal\dropzonejs;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Render\RendererInterface;
@@ -81,6 +82,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   Config factory service.
    */
   public function __construct(EntityManagerInterface $entity_manager, MimeTypeGuesserInterface $mimetype_guesser, FileSystemInterface $file_system, LoggerChannelFactoryInterface $logger_factory, RendererInterface $renderer, ConfigFactoryInterface $config_factory) {
     $this->entityManager = $entity_manager;
@@ -148,7 +150,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   /**
    * {@inheritdoc}
    */
-  public function fileEntityFromUri($uri, AccountProxyInterface $user) {
+  protected function fileEntityFromUri($uri, AccountProxyInterface $user) {
     $uri = file_stream_wrapper_uri_normalize($uri);
     $file_info = new \SplFileInfo($uri);
 
@@ -170,7 +172,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   /**
    * {@inheritdoc}
    */
-  public function renameExecutableExtensions(FileInterface $file) {
+  protected function renameExecutableExtensions(FileInterface $file) {
     if (!$this->configFactory->get('system.file')->get('allow_insecure_uploads') && preg_match('/\.(php|pl|py|cgi|asp|js)(\.|$)/i', $file->getFilename()) && (substr($file->getFilename(), -4) != '.txt')) {
       $file->setMimeType('text/plain');
       // The destination filename will also later be used to create the URI.
@@ -183,7 +185,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateFile(FileInterface $file, $extensions) {
+  protected function validateFile(FileInterface $file, $extensions) {
     $validators = [];
     $validators['file_validate_extensions'] = $extensions;
     $validators['file_validate_name_length'] = [];
@@ -195,7 +197,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   /**
    * {@inheritdoc}
    */
-  public function prepareDestination(FileInterface $file, $destination) {
+  protected function prepareDestination(FileInterface $file, $destination) {
     // Assert that the destination contains a valid stream.
     $destination_scheme = file_uri_scheme($destination);
     if (!file_stream_wrapper_valid_scheme($destination_scheme)) {
