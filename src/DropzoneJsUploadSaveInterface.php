@@ -29,11 +29,46 @@ interface DropzoneJsUploadSaveInterface {
    *   A space separated list of valid extensions.
    * @param \Drupal\Core\Session\AccountProxyInterfac $user
    *   The owner of the file.
+   * @param array $validators
+   *   An optional, associative array of callback functions used to validate the
+   *   file. See file_validate() for more documentation. Note that we add
+   *   file_validate_extensions and file_validate_name_length in this method
+   *   already.
    *
-   * @return int|bool
-   *   The id of the newly created file entity or false if saving failed.
-   *
-   * @todo Add possibility to add more validators.
+   * @return \Drupal\file\FileInterface|bool
+   *   The saved file entity of the newly created file entity or false if
+   *   saving failed.
    */
-  public function saveFile($uri, $destination, $extensions, AccountProxyInterface $user);
+  public function saveFile($uri, $destination, $extensions, AccountProxyInterface $user, $validators = []);
+
+  /**
+   * Prepare a file entity from uri.
+   *
+   * @param string $uri
+   *   File's uri.
+   * @param \Drupal\Core\Session\AccountProxyInterface $user
+   *   The owner of the file.
+   *
+   * @return \Drupal\file\FileInterface
+   *   A new entity file entity object, not saved yet.
+   */
+  public function fileEntityFromUri($uri, AccountProxyInterface $user);
+
+  /**
+   * Validate the uploaded file.
+   *
+   * @param \Drupal\file\FileInterface $file
+   *   The file entity object.
+   * @param array $extensions
+   *   A space separated string of valid extensions.
+   * @param array $additional_validators
+   *   An optional, associative array of callback functions used to validate the
+   *   file. See file_validate() for more documentation. Note that we add
+   *   file_validate_extensions and file_validate_name_length in this method
+   *   already.
+   *
+   * @return array
+   *   An array containing validation error messages.
+   */
+  public function validateFile(FileInterface $file, $extensions, array $additional_validators = []);
 }

@@ -90,13 +90,13 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     $this->fileSystem = $file_system;
     $this->logger = $logger_factory->get('dropzonejs');
     $this->renderer = $renderer;
-    $this->config = $config_factory;
+    $this->configFactory = $config_factory;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function saveFile($uri, $destination, $extensions, AccountProxyInterface $user) {
+  public function saveFile($uri, $destination, $extensions, AccountProxyInterface $user, $validators = []) {
     // Create the file entity.
     $file = $this->fileEntityFromUri($uri, $user);
 
@@ -110,7 +110,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     }
 
     // Validate the file.
-    $errors = $this->validateFile($file, $extensions);
+    $errors = $this->validateFile($file, $extensions, $validators);
     if (!empty($errors)) {
       $message = [
         'error' => [
@@ -144,13 +144,13 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
 
     // If we made it this far it's safe to record this file in the database.
     $file->save();
-    return $file->id();
+    return $file;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function fileEntityFromUri($uri, AccountProxyInterface $user) {
+  public function fileEntityFromUri($uri, AccountProxyInterface $user) {
     $uri = file_stream_wrapper_uri_normalize($uri);
     $file_info = new \SplFileInfo($uri);
 
@@ -172,6 +172,27 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   /**
    * {@inheritdoc}
    */
+  public function validateFile(FileInterface $file, $extensions, array $additional_validators = []) {
+    $validators = $additional_validators;
+
+    if (!empty($extensions)) {
+      $validators['file_validate_extensions'] = [$extensions];
+    }
+    $validators['file_validate_name_length'] = [];
+
+    // Call the validation functions specified by this function's caller.
+    return file_validate($file, $validators);
+  }
+
+  /**
+   * Rename potentially executable files.
+   *
+   * @param \Drupal\file\FileInterface $file
+   *   The file entity object.
+   *
+   * @return bool
+   *   Whether the file was renamed or not.
+   */
   protected function renameExecutableExtensions(FileInterface $file) {
     if (!$this->configFactory->get('system.file')->get('allow_insecure_uploads') && preg_match('/\.(php|pl|py|cgi|asp|js)(\.|$)/i', $file->getFilename()) && (substr($file->getFilename(), -4) != '.txt')) {
       $file->setMimeType('text/plain');
@@ -182,20 +203,19 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     return FALSE;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function validateFile(FileInterface $file, $extensions) {
-    $validators = [];
-    $validators['file_validate_extensions'] = $extensions;
-    $validators['file_validate_name_length'] = [];
-
-    // Call the validation functions specified by this function's caller.
-    return file_validate($file, $validators);
-  }
 
   /**
-   * {@inheritdoc}
+   * Validate and set destination the destination URI.
+   *
+   * @param \Drupal\file\FileInterface $file
+   *   The file entity object.
+   * @param string $destination
+   *   A string containing the URI that the file should be copied to. This must
+   *   be a stream wrapper URI.
+   *
+   * @return bool
+   *   True if the destination was sucesfully validated and set, otherwise
+   *   false.
    */
   protected function prepareDestination(FileInterface $file, $destination) {
     // Assert that the destination contains a valid stream.
