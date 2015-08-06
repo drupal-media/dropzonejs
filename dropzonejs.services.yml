@@ -1,0 +1,4 @@
+services:
+  dropzonejs.upload_save:
+    class: Drupal\dropzonejs\DropzoneJsUploadSave
+    arguments: ['@entity.manager', '@file.mime_type.guesser', '@file_system', '@logger.factory', '@renderer', '@config.factory']
