@@ -7,6 +7,7 @@
 
 namespace Drupal\dropzonejs\Element;
 
+use Drupal\Component\Utility\Bytes;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\FormStateInterface;
@@ -23,7 +24,8 @@ use Drupal\Core\Render\Element\FormElement;
  * - #dropzone_description
  *   Will be visible inside the upload area.
  * - #max_filesize
- *   Used by dropzonejs and expressed in MB. See
+ *   Used by dropzonejs and expressed in number + unit (i.e. 1.1M) This will be
+ *   converted to a form that DropzoneJs understands. See:
  *   http://www.dropzonejs.com/#config-maxFilesize
  * - #extensions
  *   A string of valid extensions separated by a space.
@@ -54,6 +56,7 @@ class DropzoneJs extends FormElement {
       '#pre_render' => [[$class, 'preRenderDropzoneJs']],
       '#theme' => 'dropzonejs',
       '#theme_wrappers' => ['form_element'],
+      '#tree' => TRUE,
       '#attached' => [
         'library' => ['dropzonejs/dropzonejs', 'dropzonejs/integration']
       ],
@@ -85,15 +88,18 @@ class DropzoneJs extends FormElement {
    *   The $element with prepared variables ready for input.html.twig.
    */
   public static function preRenderDropzoneJs($element) {
+    // Convert the human size input to bytes, convert it to MB and round it.
+    $max_size = round(Bytes::toInt($element['#max_filesize']) / pow(Bytes::KILOBYTE, 2), 2);
+
     $element['#attached']['drupalSettings']['dropzonejs'] = [
       'upload_path' => \Drupal::url('dropzonejs.upload'),
       'instances' => [
         // Configuration keys are matched with DropzoneJS configuration
         // options.
         $element['#id'] => [
-          'maxFilesize' => $element['#max_filesize'],
+          'maxFilesize' => $max_size,
           'dictDefaultMessage' => $element['#dropzone_description'],
-          'acceptedFiles' => '.' . str_replace(' ', ',.', self::getValidExtensions()),
+          'acceptedFiles' => '.' . str_replace(' ', ',.', self::getValidExtensions($element)),
         ],
       ],
     ];
@@ -110,7 +116,7 @@ class DropzoneJs extends FormElement {
     $return['uploaded_files'] = NULL;
 
     if ($input !== FALSE) {
-      $user_input = NestedArray::getValue($form_state->getUserInput(), $element['#parents'], $key_exists);
+      $user_input = NestedArray::getValue($form_state->getUserInput(), $element['#parents'] + ['uploaded_files']);
 
       if (!empty($user_input['uploaded_files'])) {
         $file_names = array_filter(explode(';', $user_input['uploaded_files']));
@@ -125,14 +131,17 @@ class DropzoneJs extends FormElement {
           // security reasons. Because here we know the acceptable extensions
           // we can remove that extension and sanitize the filename.
           $name = self::fixTmpFilename($name);
-          $name = file_munge_filename($name, self::getValidExtensions());
+          $name = file_munge_filename($name, self::getValidExtensions($element));
 
           // Finaly rename the file and add it to results.
           $new_filepath = "$temp_path/$name";
           $move_result = file_unmanaged_move($old_filepath, $new_filepath);
 
           if ($move_result) {
-            $return['uploaded_files'][] = $move_result;
+            $return['uploaded_files'][] = [
+              'path' => $move_result,
+              'filename' => $name,
+            ];
           }
           else {
             drupal_set_message(t('There was a problem while processing the file named @name', ['@name' => $name]), 'error');
@@ -148,10 +157,13 @@ class DropzoneJs extends FormElement {
   /**
    * Gets valid file extensions for this element.
    *
+   * @param array $element
+   *   The element array.
+   *
    * @return string
    *   A space separated list of extensions.
    */
-  public static function getValidExtensions() {
+  public static function getValidExtensions($element) {
     return isset($element['#extensions']) ? $element['#extensions'] : self::DEFAULT_VALID_EXTENSIONS;
   }
 
