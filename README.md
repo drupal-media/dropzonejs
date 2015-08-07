@@ -27,3 +27,7 @@ www.drupal.org/project/dropzonejs seems like a project without maintainer).
 ###Get in touch:
  - http://groups.drupal.org/media
  - IRC: #drupal-media @ Freenode
+ 
+###Thanks:
+ The development of this module is sponsored by [Examiner.com](http://www.examiner.com)
+ Thanks also to [NYC CAMP](http://nyccamp.org/) that hosted media sprints.
