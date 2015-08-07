@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Uses a view to provide entity listing in a browser's widget.
+ * Provides an Entity Browser widget that uploads new files.
  *
  * @EntityBrowserWidget(
  *   id = "dropzonejs",
@@ -54,6 +54,8 @@ class DropzoneJsEbWidget extends WidgetBase {
    *   Event dispatcher service.
    * @param \Drupal\dropzonejs\DropzoneJsUploadSaveInterface $dropzonejs_upload_save
    *   The upload saving dropzonejs service.
+   * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   *   The current user service.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityManagerInterface $entity_manager, DropzoneJsUploadSaveInterface $dropzonejs_upload_save, AccountProxyInterface $current_user) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $event_dispatcher, $entity_manager);
@@ -82,6 +84,9 @@ class DropzoneJsEbWidget extends WidgetBase {
   public function defaultConfiguration() {
     return [
       'upload_location' => 'public://',
+      'dropzone_description' => t('Drop files here to upload them'),
+      'max_filesize' => file_upload_max_size() / pow(Bytes::KILOBYTE, 2) . 'M',
+      'extensions' => 'jpg jpeg gif png txt doc xls pdf ppt pps odt ods odp',
     ] + parent::defaultConfiguration();
   }
 
