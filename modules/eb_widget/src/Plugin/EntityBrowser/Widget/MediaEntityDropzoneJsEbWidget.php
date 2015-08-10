@@ -92,7 +92,7 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
     $media_entities = [];
     $upload = $form_state->getValue('upload');
     $config = $this->getConfiguration();
-    $user = \Drupal::currentUser();
+    $user = $this->currentUser;
     /** @var \Drupal\media_entity\MediaBundleInterface $bundle */
     $bundle = $this->entityManager
       ->getStorage('media_bundle')
