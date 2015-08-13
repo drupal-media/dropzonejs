@@ -14,11 +14,12 @@
       Dropzone.autoDiscover = false;
       var selector = $(".dropzone-enable");
       selector.addClass("dropzone");
+      var input = selector.siblings('input');
 
       // Initiate dropzonejs.
       var config = {
-        url: drupalSettings.dropzonejs.upload_path,
-        addRemoveLinks: true,
+        url: input.attr('data-upload-path'),
+        addRemoveLinks: true
       };
       var instanceConfig = drupalSettings.dropzonejs.instances[selector.attr('id')];
       var dropzoneInstance = new Dropzone("#" + selector.attr("id"), $.extend({}, instanceConfig, config));

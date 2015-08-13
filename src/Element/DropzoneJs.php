@@ -8,7 +8,6 @@
 namespace Drupal\dropzonejs\Element;
 
 use Drupal\Component\Utility\Bytes;
-use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\FormElement;
@@ -71,6 +70,10 @@ class DropzoneJs extends FormElement {
       '#type' => 'hidden',
       // @todo Handle defaults.
       '#default_value' => '',
+      // If we send a url with a token through drupalSettings the placeholder
+      // doesn't get replaced, because the actual scripts markup is not there
+      // yet. So we pass this information through a data attribute.
+      '#attributes' => ['data-upload-path' => \Drupal::url('dropzonejs.upload')],
     ];
 
     return $element;
@@ -92,7 +95,6 @@ class DropzoneJs extends FormElement {
     $max_size = round(Bytes::toInt($element['#max_filesize']) / pow(Bytes::KILOBYTE, 2), 2);
 
     $element['#attached']['drupalSettings']['dropzonejs'] = [
-      'upload_path' => \Drupal::url('dropzonejs.upload'),
       'instances' => [
         // Configuration keys are matched with DropzoneJS configuration
         // options.
