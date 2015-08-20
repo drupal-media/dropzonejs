@@ -167,8 +167,6 @@ class UploadController extends ControllerBase {
    *
    * @throws \Drupal\dropzonejs\UploadException
    * @throws Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
-   *
-   * @todo Handle all the possible upload errors. See file_save_upload().
    */
   protected function handleUpload() {
     /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
@@ -176,8 +174,28 @@ class UploadController extends ControllerBase {
     if (!$file instanceof UploadedFile) {
       throw new AccessDeniedHttpException();
     }
-    elseif ($file->getError() != UPLOAD_ERR_OK) {
-      throw new UploadException(UploadException::FILE_UPLOAD_ERROR);
+    elseif ($error = $file->getError() && $error != UPLOAD_ERR_OK) {
+      // Check for file upload errors and return FALSE for this file if a lower
+      // level system error occurred. For a complete list of errors:
+      // See http://php.net/manual/features.file-upload.errors.php.
+      switch ($error) {
+        case UPLOAD_ERR_INI_SIZE:
+        case UPLOAD_ERR_FORM_SIZE:
+          $message = t('The file could not be saved because it exceeds the maximum allowed size for uploads.');
+          continue;
+
+        case UPLOAD_ERR_PARTIAL:
+        case UPLOAD_ERR_NO_FILE:
+          $message = t('The file could not be saved because the upload did not complete.');
+          continue;
+
+        // Unknown error.
+        default:
+          $message = t('The file could not be saved. An unknown error has occurred.');
+          continue;
+      }
+
+      throw new UploadException(UploadException::FILE_UPLOAD_ERROR, $message);
     }
 
     // Open temp file.
