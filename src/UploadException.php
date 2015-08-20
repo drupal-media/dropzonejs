@@ -50,7 +50,7 @@ class UploadException extends \Exception {
     self::INPUT_ERROR => 'Failed to open input stream.',
     self::OUTPUT_ERROR => 'Failed to open output stream.',
     self::MOVE_ERROR => 'Failed to move uploaded file.',
-    self::DESTINATION_FOLDER_ERROR => 'Failed to open temporary directory.',
+    self::DESTINATION_FOLDER_ERROR => 'Failed to open temporary directory for write.',
     self::FILENAME_ERROR => 'Invalid temporary file name.',
     self::FILE_UPLOAD_ERROR => 'The file upload resulted in an error on php level. See http://php.net/manual/en/features.file-upload.errors.php',
   );
@@ -60,10 +60,12 @@ class UploadException extends \Exception {
    *
    * @param int $code
    *   Error code.
+   * @param string|null $message
+   *   The error message. Defaults to null.
    */
-  public function __construct($code) {
+  public function __construct($code, $message = NULL) {
     $this->code = $code;
-    $this->message = $this->errorMessages[$this->code];
+    $this->message = isset($message) ? $message : $this->errorMessages[$this->code];
   }
 
   /**
@@ -76,10 +78,7 @@ class UploadException extends \Exception {
     return new JsonResponse(
       array(
         'jsonrpc' => '2.0',
-        'error' => array(
-          'code' => $this->code,
-          'message' => $this->errorMessages[$this->code],
-        ),
+        'error' => $this->errorMessages[$this->code],
         'id' => 'id',
       ),
       500
