@@ -205,7 +205,7 @@ class UploadController extends ControllerBase {
     }
 
     // Read binary input stream.
-    $input_uri = "{$this->temporaryUploadLocation}/{$file->getFilename()}";
+    $input_uri = $file->getFileInfo()->getRealPath();
     if (!($in = fopen($input_uri, 'rb'))) {
       throw new UploadException(UploadException::INPUT_ERROR);
     }
