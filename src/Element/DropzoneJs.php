@@ -76,6 +76,11 @@ class DropzoneJs extends FormElement {
       '#attributes' => ['data-upload-path' => \Drupal::url('dropzonejs.upload')],
     ];
 
+    if (!\Drupal::currentUser()->hasPermission('dropzone upload files')) {
+      $element['#access'] = FALSE;
+      drupal_set_message("You don't have sufficent permissions to use the DropzoneJS uploader. Contact your system administrator", 'warning');
+    }
+
     return $element;
   }
 
