@@ -122,7 +122,8 @@ class DropzoneJs extends FormElement {
 
       if (!empty($user_input['uploaded_files'])) {
         $file_names = array_filter(explode(';', $user_input['uploaded_files']));
-        $temp_path = \Drupal::config('system.file')->get('path.temporary');
+        $tmp_override = \Drupal::config('dropzonejs.settings')->get('tmp_dir');
+        $temp_path = ($tmp_override) ? $tmp_override : \Drupal::config('system.file')->get('path.temporary');
 
         foreach ($file_names as $name) {
           // The upload handler appended the txt extension to the file for
