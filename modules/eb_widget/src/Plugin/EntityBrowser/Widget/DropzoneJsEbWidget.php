@@ -104,6 +104,10 @@ class DropzoneJsEbWidget extends WidgetBase {
       '#extensions' => $config['settings']['extensions'],
     ];
 
+    // Disable the submit button until the upload sucesfully completed.
+    $form['#attached']['library'][] = 'dropzonejs_eb_widget/common';
+    $original_form['#attributes']['class'][] = 'dropzonejs-disable-submit';
+
     return $form;
   }
 

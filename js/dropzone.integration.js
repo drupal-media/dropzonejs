@@ -9,6 +9,8 @@
 (function ($, Drupal, drupalSettings) {
   "use strict";
 
+  Drupal.dropzonejsInstances = [];
+
   Drupal.behaviors.dropzonejsIntegraion = {
     attach: function(context) {
       Dropzone.autoDiscover = false;
@@ -23,6 +25,9 @@
       };
       var instanceConfig = drupalSettings.dropzonejs.instances[selector.attr('id')];
       var dropzoneInstance = new Dropzone("#" + selector.attr("id"), $.extend({}, instanceConfig, config));
+
+      // Other modules might need instances.
+      Drupal.dropzonejsInstances.push(dropzoneInstance);
 
       // React on add file. Add only accepted files.
       dropzoneInstance.on("success", function(file, response) {
