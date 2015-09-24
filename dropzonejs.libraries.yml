@@ -15,3 +15,9 @@ integration:
   version: VERSION
   js:
     js/dropzone.integration.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/underscore
+    - dropzonejs/dropzonejs

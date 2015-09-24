@@ -8,31 +8,30 @@
 
   Drupal.behaviors.dropzonejsEbWidgetCommon = {
     attach: function(context) {
-      if (Drupal.dropzonejsInstances.length) {
-        for (var i = 0; i < Drupal.dropzonejsInstances.length; i++) {
-          var instance = Drupal.dropzonejsInstances[i];
-          var $form = $(Drupal.dropzonejsInstances[i].element).parents('form');
+      if (typeof drupalSettings.dropzonejs.instances !== "undefined") {
+        _.each(drupalSettings.dropzonejs.instances, function (item) {
+          var $form = $(item.instance.element).parents('form');
 
-          if (form.hasClass('dropzonejs-disable-submit')) {
-            var $submit = form.find('input.form-submit');
-            submit.attr("disabled", "true");
+          if ($form.hasClass("dropzonejs-disable-submit")) {
+            var $submit = $form.find('[type=submit]');
+            $submit.prop("disabled", true);
 
-            instance.on("queuecomplete", function () {
-              if (instance.getRejectedFiles().length == 0) {
-                submit.removeAttr("disabled");
+            item.instance.on("queuecomplete", function () {
+              if (item.instance.getRejectedFiles().length == 0) {
+                $submit.prop("disabled", false);
               }
               else {
-                submit.attr("disabled", "true");
+                $submit.prop("disabled", true);
               }
             });
 
-            instance.on("removedfile", function (file) {
-              if (instance.getRejectedFiles().length == 0) {
-                submit.removeAttr("disabled");
+            item.instance.on("removedfile", function (file) {
+              if (item.instance.getRejectedFiles().length == 0) {
+                $submit.removeAttr("disabled");
               }
             });
           }
-        }
+        });
       }
     }
   };
