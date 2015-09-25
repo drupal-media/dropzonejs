@@ -57,7 +57,7 @@ class DropzoneJs extends FormElement {
       '#theme_wrappers' => ['form_element'],
       '#tree' => TRUE,
       '#attached' => [
-        'library' => ['dropzonejs/dropzonejs', 'dropzonejs/integration']
+        'library' => ['dropzonejs/integration']
       ],
     ];
   }

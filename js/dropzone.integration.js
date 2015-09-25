@@ -27,7 +27,7 @@
       var dropzoneInstance = new Dropzone("#" + selector.attr("id"), $.extend({}, instanceConfig, config));
 
       // Other modules might need instances.
-      Drupal.dropzonejsInstances.push(dropzoneInstance);
+      drupalSettings["dropzonejs"]["instances"][selector.attr("id")]["instance"] = dropzoneInstance;
 
       // React on add file. Add only accepted files.
       dropzoneInstance.on("success", function(file, response) {
