@@ -13,7 +13,7 @@
           var $form = $(item.instance.element).parents('form');
 
           if ($form.hasClass("dropzonejs-disable-submit")) {
-            var $submit = $form.find('[type=submit]');
+            var $submit = $form.find('.is-entity-browser-submit');
             $submit.prop("disabled", true);
 
             item.instance.on("queuecomplete", function () {
