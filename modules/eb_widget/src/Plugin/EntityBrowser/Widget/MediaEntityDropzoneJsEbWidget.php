@@ -112,6 +112,9 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
           $media_entity = $this->entityManager->getStorage('media')->create([
             'bundle' => $bundle->id(),
             $bundle->getTypeConfiguration()['source_field'] => $file,
+            'uid' => $user->id(),
+            'status' => TRUE,
+            'type' => $bundle->getType()->getPluginId(),
           ]);
           $media_entity->save();
           $media_entities[] = $media_entity;
