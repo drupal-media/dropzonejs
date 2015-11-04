@@ -126,7 +126,7 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
     }
 
     if (!empty(array_filter($media_entities))) {
-      $this->selectEntities($media_entities);
+      $this->selectEntities($media_entities, $form_state);
       $this->clearFormValues($element, $form_state);
     }
   }
