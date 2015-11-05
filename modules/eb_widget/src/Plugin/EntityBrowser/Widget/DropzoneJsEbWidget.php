@@ -168,7 +168,7 @@ class DropzoneJsEbWidget extends WidgetBase {
     }
 
     if (!empty(array_filter($files))) {
-      $this->selectEntities($files);
+      $this->selectEntities($files, $form_state);
       $this->clearFormValues($element, $form_state);
     }
   }
