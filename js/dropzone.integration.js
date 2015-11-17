@@ -9,6 +9,12 @@
 (function ($, Drupal, drupalSettings) {
   "use strict";
 
+  Drupal.AjaxCommands.prototype.updateDropzone = function (ajax, response, status) {
+    $(response.selector).siblings(':hidden').val(function (value) {
+      return value + response.filename + ';';
+    });
+  };
+
   Drupal.dropzonejsInstances = [];
 
   Drupal.behaviors.dropzonejsIntegraion = {
@@ -21,7 +27,11 @@
       // Initiate dropzonejs.
       var config = {
         url: input.attr('data-upload-path'),
-        addRemoveLinks: true
+        addRemoveLinks: true,
+        params: {
+          // Send the dropzone's CSS ID to the server for AJAX purposes.
+          selector: selector.attr('id')
+        }
       };
       var instanceConfig = drupalSettings.dropzonejs.instances[selector.attr('id')];
       var dropzoneInstance = new Dropzone("#" + selector.attr("id"), $.extend({}, instanceConfig, config));

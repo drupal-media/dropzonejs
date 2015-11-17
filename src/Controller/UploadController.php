@@ -7,10 +7,12 @@
 
 namespace Drupal\dropzonejs\Controller;
 
+use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Transliteration\PhpTransliteration;
+use Drupal\dropzonejs\Ajax\UpdateDropzoneCommand;
 use Drupal\dropzonejs\UploadException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -92,8 +94,13 @@ class UploadController extends ControllerBase {
 
   /**
    * Handles DropzoneJs uploads.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $req
+   *   The request.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
    */
-  public function handleUploads() {
+  public function handleUploads(Request $req) {
     // @todo: Implement file_validate_size();
     try {
       $this->prepareTemporaryUploadDestination();
@@ -103,13 +110,20 @@ class UploadController extends ControllerBase {
       return $e->getErrorResponse();
     }
 
-    // Return JSON-RPC response.
-    // Controllers should return a response.
-    return new JsonResponse([
-      'jsonrpc' => '2.0',
-      'result' => $this->filename,
-      'id' => 'id',
-    ], 200);
+    // Return either an AJAX command or a JSON-RPC response (default).
+    $request = $req->request;
+    if ($request->has('_drupal_ajax')) {
+      $command = new UpdateDropzoneCommand($request->get('selector'), $this->filename);
+      return (new AjaxResponse())->addCommand($command);
+    }
+    else {
+      // Return JSON-RPC response.
+      return new JsonResponse([
+        'jsonrpc' => '2.0',
+        'result' => $this->filename,
+        'id' => 'id',
+      ], 200);
+    }
   }
 
   /**
