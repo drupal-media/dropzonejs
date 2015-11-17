@@ -41,14 +41,16 @@
 
       // React on add file. Add only accepted files.
       dropzoneInstance.on("success", function(file, response) {
-        var uploadedFilesElement = selector.siblings(':hidden');
-        var currentValue = uploadedFilesElement.attr('value');
+        if (response.hasOwnProperty('json-rpc')) {
+          var uploadedFilesElement = selector.siblings(':hidden');
+          var currentValue = uploadedFilesElement.attr('value');
 
-        // The file is transliterated on upload. The element has to reflect
-        // the real filename.
-        file.processedName = response.result;
+          // The file is transliterated on upload. The element has to reflect
+          // the real filename.
+          file.processedName = response.result;
 
-        uploadedFilesElement.attr('value', currentValue + response.result + ';');
+          uploadedFilesElement.attr('value', currentValue + response.result + ';');
+        }
       });
 
       // React on file removing.

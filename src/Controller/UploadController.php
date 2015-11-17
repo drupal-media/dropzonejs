@@ -10,7 +10,6 @@ namespace Drupal\dropzonejs\Controller;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Transliteration\PhpTransliteration;
 use Drupal\dropzonejs\Ajax\UpdateDropzoneCommand;
 use Drupal\dropzonejs\UploadException;
@@ -18,7 +17,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
@@ -180,7 +178,7 @@ class UploadController extends ControllerBase {
    * Handles multipart uploads.
    *
    * @throws \Drupal\dropzonejs\UploadException
-   * @throws Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
+   * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    */
   protected function handleUpload() {
     /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
