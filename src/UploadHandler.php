@@ -51,8 +51,8 @@ class UploadHandler implements UploadHandlerInterface {
   /**
    * Constructs dropzone upload controller route controller.
    *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   Request object.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Config factory.
    * @param \Drupal\Core\Transliteration\PhpTransliteration $transliteration
@@ -61,7 +61,7 @@ class UploadHandler implements UploadHandlerInterface {
   public function __construct(RequestStack $request_stack, ConfigFactoryInterface $config, TransliterationInterface $transliteration) {
     $this->request = $request_stack->getCurrentRequest();
     $tmp_override = $config->get('dropzonejs.settings')->get('tmp_dir');
-    $this->temporaryUploadLocation = ($tmp_override) ? $tmp_override : $config->get('system.file')->get('path.temporary');
+    $this->temporaryUploadLocation = $tmp_override ?: $config->get('system.file')->get('path.temporary');
     $this->transliteration = $transliteration;
   }
 
@@ -161,4 +161,5 @@ class UploadHandler implements UploadHandlerInterface {
 
     return $tmp;
   }
+
 }
