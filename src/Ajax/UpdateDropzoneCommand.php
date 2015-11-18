@@ -24,31 +24,23 @@ class UpdateDropzoneCommand implements CommandInterface {
   protected $element;
 
   /**
+   * The name of the uploaded file.
+   *
    * @var string
    */
-  protected $files = [];
+  protected $file;
 
   /**
    * UpdateDropzoneCommand constructor.
    *
    * @param array $element
    *   The form element to be updated.
-   */
-  public function __construct(array $element) {
-    $this->element = $element;
-  }
-
-  /**
-   * Adds to the list of files to be updated in the dropzone element.
-   *
    * @param string|\Symfony\Component\HttpFoundation\File\UploadedFile $file
    *   The uploaded file name, or an UploadedFile object.
-   *
-   * @return $this
    */
-  public function addFile($file) {
-    $this->files[] = $file instanceof UploadedFile ? $file->getFilename() : (string) $file;
-    return $this;
+  public function __construct(array $element, $file) {
+    $this->element = $element;
+    $this->file = $file instanceof UploadedFile ? $file->getFilename() : $file;
   }
 
   /**
@@ -58,7 +50,7 @@ class UpdateDropzoneCommand implements CommandInterface {
     return [
       'command' => 'update_dropzone',
       'selector' => 'input[name="' . $this->element['uploaded_files']['#name'] . '"]',
-      'files' => array_unique($this->files),
+      'file' => $this->file,
     ];
   }
 
