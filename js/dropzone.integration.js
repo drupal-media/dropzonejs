@@ -65,7 +65,7 @@
 
   Drupal.dropzonejsInstances = [];
 
-  Drupal.behaviors.dropzonejsIntegraion = {
+  Drupal.behaviors.dropzonejsIntegration = {
     attach: function () {
       Dropzone.autoDiscover = false;
       var selector = $(".dropzone-enable");
