@@ -11,8 +11,10 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\dropzonejs\UploadException;
 use Drupal\dropzonejs\UploadHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Handles requests that dropzone issues when uploading files.
@@ -67,6 +69,10 @@ class UploadController extends ControllerBase {
    */
   public function handleUploads() {
     $file = $this->request->files->get('file');
+    if (!$file instanceof UploadedFile) {
+      throw new AccessDeniedHttpException();
+    }
+
     // @todo: Implement file_validate_size();
     try {
       $uri = $this->uploadHandler->handleUpload($file);
