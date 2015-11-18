@@ -11,10 +11,8 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\dropzonejs\UploadException;
 use Drupal\dropzonejs\UploadHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Handles requests that dropzone issues when uploading files.
@@ -39,12 +37,10 @@ class UploadController extends ControllerBase {
   /**
    * Constructs dropzone upload controller route controller.
    *
+   * @param \Drupal\dropzonejs\UploadHandlerInterface $upload_handler
+   *   The upload handler service.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Request object.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
-   *   Config factory.
-   * @param \Drupal\Core\Transliteration\PhpTransliteration $transliteration
-   *   Transliteration service.
    */
   public function __construct(UploadHandlerInterface $upload_handler, Request $request) {
     $this->uploadHandler = $upload_handler;
@@ -63,19 +59,22 @@ class UploadController extends ControllerBase {
 
   /**
    * Handles DropzoneJs uploads.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $req
+   *   The request.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
    */
   public function handleUploads() {
     $file = $this->request->files->get('file');
-    if (!$file instanceof UploadedFile) {
-      throw new AccessDeniedHttpException();
-    }
-
     // @todo: Implement file_validate_size();
     try {
+      $uri = $this->uploadHandler->handleUpload($file);
+
       // Return JSON-RPC response.
       return new JsonResponse([
         'jsonrpc' => '2.0',
-        'result' => basename($this->uploadHandler->handleUpload($file)),
+        'result' => basename($uri),
         'id' => 'id',
       ], 200);
     }
