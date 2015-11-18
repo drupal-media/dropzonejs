@@ -11,7 +11,9 @@
 
   Drupal.AjaxCommands.prototype.update_dropzone = function (ajax, response, status) {
     $(response.selector).val(function (i, value) {
-      return value.split(';').concat(response.file).join(';');
+      value = value.split(';');
+      value.push(response.file);
+      return value.join(';');
     });
   };
 
@@ -30,7 +32,9 @@
           file.processedName = response.result;
 
           this.element.siblings(':hidden').val(function (i, value) {
-            return value.split(';').concat(response.result).join(';');
+            value = value.split(';');
+            value.push(response.result);
+            return value.join(';');
           });
         }
       },
