@@ -9,6 +9,54 @@
 (function ($, Drupal, drupalSettings) {
   "use strict";
 
+  Drupal.AjaxCommands.prototype.update_dropzone = function (ajax, response, status) {
+    $(response.selector).val(function (value) {
+      return value + response.files.join(';') + ';';
+    });
+  };
+
+  Drupal.dropzonejs = {
+    responseHandlers: {
+      /**
+       * Handles JSON-RPC response from DropzoneJS' UploadController.
+       */
+      jsonRPC: {
+        canHandle: function (response) {
+          return response.hasOwnProperty('jsonrpc');
+        },
+        handle: function (response) {
+          var uploadedFilesElement = this.element.siblings(':hidden');
+          var currentValue = uploadedFilesElement.attr('value');
+
+          // The file is transliterated on upload. The element has to reflect
+          // the real filename.
+          file.processedName = response.result;
+
+          uploadedFilesElement.attr('value', currentValue + response.result + ';');
+        }
+      },
+
+      /**
+       * Handles response from Drupal's AJAX framework (an array of commands).
+       */
+      drupalAjax: {
+        canHandle: function (response) {
+          return response instanceof Array;
+        },
+        handle: function (response) {
+          if (typeof this.drupalAjax === 'undefined') {
+            var settings = {
+              element: $(this.element)
+            };
+            settings.url = settings.element.siblings('input[data-upload-path]').attr('data-upload-path');
+            this.drupalAjax = Drupal.ajax(settings);
+          }
+          this.drupalAjax.success(response);
+        }
+      }
+    }
+  };
+
   Drupal.dropzonejsInstances = [];
 
   Drupal.behaviors.dropzonejsIntegraion = {
@@ -31,18 +79,19 @@
 
       // React on add file. Add only accepted files.
       dropzoneInstance.on("success", function(file, response) {
-        var uploadedFilesElement = selector.siblings(':hidden');
-        var currentValue = uploadedFilesElement.attr('value');
-
-        // The file is transliterated on upload. The element has to reflect
-        // the real filename.
-        file.processedName = response.result;
-
-        uploadedFilesElement.attr('value', currentValue + response.result + ';');
+        // Find the appropriate response handler.
+        for (var type in Drupal.dropzonejs.responseHandlers) {
+          var handler = Drupal.dropzonejs.responseHandlers[type];
+          if (handler.canHandle.call(this, response)) {
+            handler.handle.call(this, response);
+            break;
+          }
+        }
       });
 
       // React on file removing.
       dropzoneInstance.on("removedfile", function(file) {
+        console.log(this);
         var uploadedFilesElement = selector.siblings(':hidden');
         var currentValue = uploadedFilesElement.attr('value');
 
