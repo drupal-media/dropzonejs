@@ -62,9 +62,6 @@ class UploadController extends ControllerBase {
   /**
    * Handles DropzoneJs uploads.
    *
-   * @param \Symfony\Component\HttpFoundation\Request $req
-   *   The request.
-   *
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function handleUploads() {
