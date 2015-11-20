@@ -38,16 +38,26 @@ class UploadHandler implements UploadHandlerInterface {
   protected $transliteration;
 
   /**
+   * The scheme (stream wrapper) used to store uploaded files.
+   *
+   * @var string
+   */
+  protected $uploadScheme;
+
+  /**
    * Constructs dropzone upload controller route controller.
    *
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
-   * @param \Drupal\Core\Transliteration\PhpTransliteration $transliteration
+   * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
    *   Transliteration service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory service.
    */
-  public function __construct(RequestStack $request_stack, TransliterationInterface $transliteration) {
+  public function __construct(RequestStack $request_stack, TransliterationInterface $transliteration, ConfigFactoryInterface $config_factory) {
     $this->request = $request_stack->getCurrentRequest();
     $this->transliteration = $transliteration;
+    $this->uploadScheme = $config_factory->get('dropzonejs.settings')->get('upload_scheme');
   }
 
   /**
@@ -103,7 +113,7 @@ class UploadHandler implements UploadHandlerInterface {
     }
 
     // Open temp file.
-    $tmp = 'temporary://' . $this->getFilename($file);
+    $tmp = $this->uploadScheme . '://' . $this->getFilename($file);
     if (!($out = fopen($tmp, $this->request->request->get('chunk', 0) ? 'ab' : 'wb'))) {
       throw new UploadException(UploadException::OUTPUT_ERROR);
     }
