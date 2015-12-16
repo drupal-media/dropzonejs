@@ -88,39 +88,41 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
    * {@inheritdoc}
    */
   public function submit(array &$element, array &$form, FormStateInterface $form_state) {
-    $files = [];
     $media_entities = [];
     $upload = $form_state->getValue('upload');
-    $config = $this->getConfiguration();
-    $user = $this->currentUser;
-    /** @var \Drupal\media_entity\MediaBundleInterface $bundle */
-    $bundle = $this->entityManager
-      ->getStorage('media_bundle')
-      ->load($this->configuration['media_entity_bundle']);
+    if (isset($upload['uploaded_files']) && is_array($upload['uploaded_files'])) {
 
-    // First save the file.
-    foreach ($upload['uploaded_files'] as $uploaded_file) {
-      $file = $this->dropzoneJsUploadSave->saveFile($uploaded_file['path'], $config['settings']['upload_location'], $config['settings']['extensions'], $user);
+      $config = $this->getConfiguration();
+      $user = $this->currentUser;
+      /** @var \Drupal\media_entity\MediaBundleInterface $bundle */
+      $bundle = $this->entityManager
+        ->getStorage('media_bundle')
+        ->load($this->configuration['media_entity_bundle']);
 
-      if ($file) {
-        $file->setPermanent();
-        $file->save();
+      // First save the file.
+      foreach ($upload['uploaded_files'] as $uploaded_file) {
+        $file = $this->dropzoneJsUploadSave->saveFile($uploaded_file['path'], $config['settings']['upload_location'], $config['settings']['extensions'], $user);
 
-        // Now save the media entity.
-        if ($this->moduleHandler->moduleExists('media_entity')) {
-          /** @var \Drupal\media_entity\MediaInterface $media_entity */
-          $media_entity = $this->entityManager->getStorage('media')->create([
-            'bundle' => $bundle->id(),
-            $bundle->getTypeConfiguration()['source_field'] => $file,
-            'uid' => $user->id(),
-            'status' => TRUE,
-            'type' => $bundle->getType()->getPluginId(),
-          ]);
-          $media_entity->save();
-          $media_entities[] = $media_entity;
-        }
-        else {
-          drupal_set_message(t('The media entity was not saved, because the media_entity module is not enabled.'));
+        if ($file) {
+          $file->setPermanent();
+          $file->save();
+
+          // Now save the media entity.
+          if ($this->moduleHandler->moduleExists('media_entity')) {
+            /** @var \Drupal\media_entity\MediaInterface $media_entity */
+            $media_entity = $this->entityManager->getStorage('media')->create([
+              'bundle' => $bundle->id(),
+              $bundle->getTypeConfiguration()['source_field'] => $file,
+              'uid' => $user->id(),
+              'status' => TRUE,
+              'type' => $bundle->getType()->getPluginId(),
+            ]);
+            $media_entity->save();
+            $media_entities[] = $media_entity;
+          }
+          else {
+            drupal_set_message(t('The media entity was not saved, because the media_entity module is not enabled.'));
+          }
         }
       }
     }
