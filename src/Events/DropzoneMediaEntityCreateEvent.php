@@ -32,7 +32,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
   protected $file;
 
   /**
-   * The form.
+   * The form that contains the Dropzone element.
    *
    * @var array
    */
@@ -46,7 +46,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
   protected $formState;
 
   /**
-   * The form element.
+   * The Dropzone form element.
    *
    * @var array
    */
@@ -60,11 +60,11 @@ class DropzoneMediaEntityCreateEvent extends Event {
    * @param \Drupal\file\FileInterface $file
    *   The file that will be used for the media entity.
    * @param $form
-   *   The form.
+   *   The form that contains the Dropzone element.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    * @param $element
-   *   The form element.
+   *   The Dropzone form element.
    */
   public function __construct(MediaInterface $media_entity, FileInterface $file, $form, FormStateInterface $form_state, $element) {
     $this->mediaEntity = $media_entity;
@@ -103,7 +103,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
   }
 
   /**
-   * Get the form.
+   * Get the form that contains the Dropzone element.
    *
    * @return array
    */
@@ -131,7 +131,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
   }
 
   /**
-   * Get the form element.
+   * Get the Dropzone form element.
    *
    * @return array
    */
@@ -140,7 +140,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
   }
 
   /**
-   * Set the form element.
+   * Set the Dropzone form element.
    *
    * @param $element
    *   The updated form element.
