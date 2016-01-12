@@ -13,6 +13,8 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\dropzonejs\DropzoneJsUploadSaveInterface;
+use Drupal\dropzonejs\Events\DropzoneMediaEntityCreateEvent;
+use Drupal\dropzonejs\Events\Events;
 use Drupal\entity_browser\WidgetBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -117,6 +119,9 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
               'status' => TRUE,
               'type' => $bundle->getType()->getPluginId(),
             ]);
+            $event = $this->eventDispatcher->dispatch(Events::MEDIA_ENTITY_CREATE, new DropzoneMediaEntityCreateEvent($media_entity, $file, $form, $form_state, $element));
+            $media_entity = $event->getMediaEntity();
+
             $media_entity->save();
             $media_entities[] = $media_entity;
           }
