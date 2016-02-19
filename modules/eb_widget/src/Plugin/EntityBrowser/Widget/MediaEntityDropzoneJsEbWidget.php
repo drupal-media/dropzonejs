@@ -11,6 +11,7 @@ use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\dropzonejs\DropzoneJsUploadSaveInterface;
 use Drupal\dropzonejs\Events\DropzoneMediaEntityCreateEvent;
@@ -136,5 +137,42 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
       $this->selectEntities($media_entities, $form_state);
       $this->clearFormValues($element, $form_state);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $configuration = $this->getConfiguration();
+    $settings = $configuration['settings'];
+    $form += parent::buildConfigurationForm($form, $form_state);
+
+    $options = [];
+    $media_bundles = $this->entityManager->getBundleInfo('media');
+    if (!empty($media_bundles)) {
+      foreach ($media_bundles as $id => $bundle) {
+        $options[$id] = $bundle['label'];
+      }
+      $disabled = FALSE;
+      $description = $this->t('Select the type of media entity that you want to create from the uploaded files.');
+    }
+    else {
+      $disabled = TRUE;
+      $description = $this->t('You must @create_bundle before using this widget.', [
+        '@create_bundle' => Link::createFromRoute($this->t('create a media bundle'), 'media.bundle_add')->toString()
+      ]);
+    }
+
+    $form['media_entity_bundle'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Media bundle to create'),
+      '#default_value' => $settings['media_entity_bundle'],
+      '#description' => $description,
+      '#options' => $options,
+      '#disabled' => $disabled,
+      '#required' => TRUE,
+    ];
+
+    return $form;
   }
 }

@@ -211,4 +211,72 @@ class DropzoneJsEbWidget extends WidgetBase {
     return TRUE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $configuration = $this->configuration;
+
+    $form['upload_location'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Upload location'),
+      '#default_value' => $configuration['upload_location'],
+    ];
+
+    $form['dropzone_description'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Dropzone drag-n-drop zone text'),
+      '#default_value' => $configuration['dropzone_description'],
+    ];
+
+    preg_match('%\d+%', $configuration['max_filesize'], $matches);
+    $max_filesize = !empty($matches) ? array_shift($matches) : '1';
+
+    $form['max_filesize'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Maximum size of files'),
+      '#min' => '0',
+      '#field_suffix' => $this->t('MB'),
+      '#default_value' => $max_filesize,
+    ];
+
+    $form['extensions'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Allowed file extensions'),
+      '#desciption' => $this->t('A space separated list of file extensions'),
+      '#default_value' => $configuration['extensions'],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $values = $form_state->getValues()['table'][$this->uuid()]['form'];
+
+    if (!empty($values['extensions'])) {
+      $extensions = explode(' ', $values['extensions']);
+      $fail = FALSE;
+
+      foreach ($extensions as $extension) {
+        if (preg_match('%^\w*$%', $extension) !== 1) {
+          $fail = TRUE;
+        }
+      }
+
+      if ($fail) {
+        $form_state->setErrorByName('extensions', $this->t('Invalid extension list format.'));
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    parent::submitConfigurationForm($form, $form_state);
+    $this->configuration['max_filesize'] = $this->configuration['max_filesize'] . 'M';
+  }
 }
