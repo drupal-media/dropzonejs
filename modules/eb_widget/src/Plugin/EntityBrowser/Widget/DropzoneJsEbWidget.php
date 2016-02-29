@@ -83,7 +83,7 @@ class DropzoneJsEbWidget extends WidgetBase {
    */
   public function defaultConfiguration() {
     return [
-      'upload_location' => 'public://',
+      'upload_location' => 'public://[date:custom:Y]-[date:custom:m]',
       'dropzone_description' => t('Drop files here to upload them'),
       'max_filesize' => file_upload_max_size() / pow(Bytes::KILOBYTE, 2) . 'M',
       'extensions' => 'jpg jpeg gif png txt doc xls pdf ppt pps odt ods odp',
