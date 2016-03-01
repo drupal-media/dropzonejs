@@ -39,12 +39,10 @@ class UploadController extends ControllerBase {
   /**
    * Constructs dropzone upload controller route controller.
    *
+   * @param \Drupal\dropzonejs\UploadHandlerInterface $upload_handler
+   *   The upload handler service.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Request object.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
-   *   Config factory.
-   * @param \Drupal\Core\Transliteration\PhpTransliteration $transliteration
-   *   Transliteration service.
    */
   public function __construct(UploadHandlerInterface $upload_handler, Request $request) {
     $this->uploadHandler = $upload_handler;
@@ -63,6 +61,8 @@ class UploadController extends ControllerBase {
 
   /**
    * Handles DropzoneJs uploads.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
    */
   public function handleUploads() {
     $file = $this->request->files->get('file');
@@ -72,10 +72,12 @@ class UploadController extends ControllerBase {
 
     // @todo: Implement file_validate_size();
     try {
+      $uri = $this->uploadHandler->handleUpload($file);
+
       // Return JSON-RPC response.
       return new JsonResponse([
         'jsonrpc' => '2.0',
-        'result' => basename($this->uploadHandler->handleUpload($file)),
+        'result' => basename($uri),
         'id' => 'id',
       ], 200);
     }
