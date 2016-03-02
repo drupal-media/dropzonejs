@@ -12,7 +12,8 @@
   Drupal.dropzonejsInstances = [];
 
   Drupal.behaviors.dropzonejsIntegraion = {
-    attach: function(context) {
+    attach: function (context) {
+      var Dropzone;
       Dropzone.autoDiscover = false;
       var selector = $(".dropzone-enable");
       selector.addClass("dropzone");
@@ -30,7 +31,7 @@
       drupalSettings["dropzonejs"]["instances"][selector.attr("id")]["instance"] = dropzoneInstance;
 
       // React on add file. Add only accepted files.
-      dropzoneInstance.on("success", function(file, response) {
+      dropzoneInstance.on("success", function (file, response) {
         var uploadedFilesElement = selector.siblings(':hidden');
         var currentValue = uploadedFilesElement.attr('value');
 
@@ -42,7 +43,7 @@
       });
 
       // React on file removing.
-      dropzoneInstance.on("removedfile", function(file) {
+      dropzoneInstance.on("removedfile", function (file) {
         var uploadedFilesElement = selector.siblings(':hidden');
         var currentValue = uploadedFilesElement.attr('value');
 
@@ -50,7 +51,7 @@
         if (currentValue.length) {
           var fileNames = currentValue.split(";");
           for (var i in fileNames) {
-            if (fileNames[i] == file.processedName) {
+            if (fileNames[i] === file.processedName) {
               fileNames.splice(i,1);
               break;
             }
