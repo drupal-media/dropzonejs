@@ -242,7 +242,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
 
     // Prepare the destination dir.
     if (!file_exists($destination)) {
-      $this->fileSystem->mkdir($destination);
+      $this->fileSystem->mkdir($destination, NULL, TRUE);
     }
 
     // A file URI may already have a trailing slash or look like "public://".
