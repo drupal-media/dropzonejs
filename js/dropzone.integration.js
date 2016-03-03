@@ -13,7 +13,6 @@
 
   Drupal.behaviors.dropzonejsIntegraion = {
     attach: function (context) {
-      var Dropzone;
       Dropzone.autoDiscover = false;
       var selector = $(".dropzone-enable");
       selector.addClass("dropzone");
