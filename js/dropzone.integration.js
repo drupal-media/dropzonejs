@@ -32,7 +32,7 @@
       // React on add file. Add only accepted files.
       dropzoneInstance.on("success", function (file, response) {
         var uploadedFilesElement = selector.siblings(':hidden');
-        var currentValue = uploadedFilesElement.attr('value');
+        var currentValue = uploadedFilesElement.attr('value') || '';
 
         // The file is transliterated on upload. The element has to reflect
         // the real filename.
