@@ -1,0 +1,8 @@
+name: 'DropzoneJs Test'
+type: module
+description: 'Support module for DropzoneJs tests.'
+package: Testing
+version: VERSION
+core: 8.x
+dependencies:
+ - dropzonejs
