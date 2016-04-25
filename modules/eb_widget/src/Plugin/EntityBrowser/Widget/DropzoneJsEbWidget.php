@@ -83,8 +83,9 @@ class DropzoneJsEbWidget extends WidgetBase {
    */
   public function defaultConfiguration() {
     return [
+      'dropzone_title' => $this->t('File upload'),
       'upload_location' => 'public://',
-      'dropzone_description' => t('Drop files here to upload them'),
+      'dropzone_description' => $this->t('Drop files here to upload them'),
       'max_filesize' => file_upload_max_size() / pow(Bytes::KILOBYTE, 2) . 'M',
       'extensions' => 'jpg jpeg gif png txt doc xls pdf ppt pps odt ods odp',
     ] + parent::defaultConfiguration();
@@ -93,18 +94,45 @@ class DropzoneJsEbWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $config = $this->getConfiguration();
+
+    $form['dropzone_title'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Dropzone label'),
+      '#default_value' => $config['settings']['dropzone_title'],
+    ];
+    $form['dropzone_description'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Dropzone description'),
+      '#default_value' => $config['settings']['dropzone_description'],
+    ];
+    $form['extensions'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Allowed extensions'),
+      '#required' => TRUE,
+      '#default_value' => $config['settings']['extensions'],
+    ];
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getForm(array &$original_form, FormStateInterface $form_state, array $aditional_widget_parameters) {
     $config = $this->getConfiguration();
     $form['upload'] = [
-      '#title' => t('File upload'),
       '#type' => 'dropzonejs',
       '#required' => TRUE,
       '#dropzone_description' => $config['settings']['dropzone_description'],
       '#max_filesize' => $config['settings']['max_filesize'],
       '#extensions' => $config['settings']['extensions'],
     ];
+    if (!empty($config['settings']['dropzone_title'])) {
+      $form['upload']['#title'] = $config['settings']['dropzone_title'];
+    }
 
-    // Disable the submit button until the upload sucesfully completed.
+    // Disable the submit button until the upload successfully completes.
     $form['#attached']['library'][] = 'dropzonejs_eb_widget/common';
     $original_form['#attributes']['class'][] = 'dropzonejs-disable-submit';
 
