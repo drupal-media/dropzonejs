@@ -84,8 +84,8 @@ class DropzoneJsEbWidget extends WidgetBase {
   public function defaultConfiguration() {
     return [
       'dropzone_title' => $this->t('File upload'),
-      'upload_location' => 'public://',
-      'dropzone_description' => $this->t('Drop files here to upload them'),
+      'upload_location' => 'public://[date:custom:Y]-[date:custom:m]',
+      'dropzone_description' => t('Drop files here to upload them'),
       'max_filesize' => file_upload_max_size() / pow(Bytes::KILOBYTE, 2) . 'M',
       'extensions' => 'jpg jpeg gif png txt doc xls pdf ppt pps odt ods odp',
     ] + parent::defaultConfiguration();
@@ -101,6 +101,11 @@ class DropzoneJsEbWidget extends WidgetBase {
       '#type' => 'textfield',
       '#title' => $this->t('Dropzone label'),
       '#default_value' => $config['settings']['dropzone_title'],
+    ];
+    $form['upload_location'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Upload location'),
+      '#default_value' => $config['settings']['upload_location'],
     ];
     $form['dropzone_description'] = [
       '#type' => 'textarea',
