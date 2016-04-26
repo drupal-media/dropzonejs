@@ -87,6 +87,7 @@ class DropzoneJsEbWidget extends WidgetBase {
       'dropzone_description' => t('Drop files here to upload them'),
       'max_filesize' => file_upload_max_size() / pow(Bytes::KILOBYTE, 2) . 'M',
       'extensions' => 'jpg jpeg gif png txt doc xls pdf ppt pps odt ods odp',
+      'max_files' => NULL,
     ] + parent::defaultConfiguration();
   }
 
@@ -102,6 +103,7 @@ class DropzoneJsEbWidget extends WidgetBase {
       '#dropzone_description' => $config['settings']['dropzone_description'],
       '#max_filesize' => $config['settings']['max_filesize'],
       '#extensions' => $config['settings']['extensions'],
+      '#max_files' => $config['settings']['max_files'],
     ];
 
     // Disable the submit button until the upload sucesfully completed.
