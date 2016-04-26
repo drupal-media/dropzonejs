@@ -107,6 +107,11 @@ class DropzoneJsEbWidget extends WidgetBase {
       '#title' => $this->t('Dropzone description'),
       '#default_value' => $config['settings']['dropzone_description'],
     ];
+    $form['max_filesize'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Maximum file size'),
+      '#default_value' => $config['settings']['max_filesize'],
+    ];
     $form['extensions'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Allowed extensions'),
