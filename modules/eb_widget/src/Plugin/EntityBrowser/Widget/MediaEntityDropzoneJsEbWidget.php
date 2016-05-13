@@ -9,6 +9,7 @@ namespace Drupal\dropzonejs_eb_widget\Plugin\EntityBrowser\Widget;
 use Drupal\Component\Utility\Bytes;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
@@ -31,6 +32,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * )
  */
 class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
+
   /**
    * Module handler service.
    *
@@ -54,7 +56,7 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   The current user service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler intarface.
+   *   The module handler service.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityManagerInterface $entity_manager, DropzoneJsUploadSaveInterface $dropzonejs_upload_save, AccountProxyInterface $current_user, ModuleHandlerInterface $module_handler) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $event_dispatcher, $entity_manager, $dropzonejs_upload_save, $current_user);
@@ -88,6 +90,64 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
   }
 
   /**
+   * Returns the media bundle that this widget creates.
+   *
+   * @return \Drupal\media_entity\MediaBundleInterface
+   */
+  protected function getBundle() {
+    return $this->entityManager->getStorage('media_bundle')
+      ->load($this->configuration['media_entity_bundle']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildConfigurationForm($form, $form_state);
+
+    $form['media_entity_bundle'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Media type'),
+      '#required' => TRUE,
+      '#description' => $this->t('The type of media entity to create from the uploaded file(s).'),
+    ];
+
+    $bundle = $this->getBundle();
+    if ($bundle) {
+      $form['media_entity_bundle']['#default_value'] = $bundle->id();
+    }
+
+    $bundles = $this->entityManager->getStorage('media_bundle')->loadMultiple();
+
+    if (!empty($bundles)) {
+      foreach ($bundles as $bundle) {
+        $form['media_entity_bundle']['#options'][$bundle->id()] = $bundle->label();
+      }
+    }
+    else {
+      $form['media_entity_bundle']['#disabled'] = TRUE;
+      $form['media_entity_bundle']['#description'] = $this->t('You must @create_bundle before using this widget.', [
+        '@create_bundle' => Link::createFromRoute($this->t('create a media bundle'), 'media.bundle_add')->toString()
+      ]);
+    }
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function calculateDependencies() {
+    $dependencies = parent::calculateDependencies();
+
+    // Depend on the media bundle this widget creates.
+    $bundle = $this->getBundle();
+    $dependencies[$bundle->getConfigDependencyKey()][] = $bundle->getConfigDependencyName();
+
+    return $dependencies;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function submit(array &$element, array &$form, FormStateInterface $form_state) {
@@ -97,10 +157,7 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
 
       $config = $this->getConfiguration();
       $user = $this->currentUser;
-      /** @var \Drupal\media_entity\MediaBundleInterface $bundle */
-      $bundle = $this->entityManager
-        ->getStorage('media_bundle')
-        ->load($this->configuration['media_entity_bundle']);
+      $bundle = $this->getBundle();
 
       // First save the file.
       foreach ($upload['uploaded_files'] as $uploaded_file) {
@@ -137,42 +194,5 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
       $this->selectEntities($media_entities, $form_state);
       $this->clearFormValues($element, $form_state);
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $configuration = $this->getConfiguration();
-    $settings = $configuration['settings'];
-    $form += parent::buildConfigurationForm($form, $form_state);
-
-    $options = [];
-    $media_bundles = $this->entityManager->getBundleInfo('media');
-    if (!empty($media_bundles)) {
-      foreach ($media_bundles as $id => $bundle) {
-        $options[$id] = $bundle['label'];
-      }
-      $disabled = FALSE;
-      $description = $this->t('Select the type of media entity that you want to create from the uploaded files.');
-    }
-    else {
-      $disabled = TRUE;
-      $description = $this->t('You must @create_bundle before using this widget.', [
-        '@create_bundle' => Link::createFromRoute($this->t('create a media bundle'), 'media.bundle_add')->toString()
-      ]);
-    }
-
-    $form['media_entity_bundle'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Media bundle to create'),
-      '#default_value' => $settings['media_entity_bundle'],
-      '#description' => $description,
-      '#options' => $options,
-      '#disabled' => $disabled,
-      '#required' => TRUE,
-    ];
-
-    return $form;
   }
 }

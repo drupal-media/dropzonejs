@@ -42,7 +42,7 @@ class DropzoneJsElementTest extends KernelTestBase {
     $form = \Drupal::formBuilder()->getForm('\Drupal\dropzonejs_test\Form\DropzoneJsTestForm');
     $this->render($form);
 
-    $xpath_base = "/html/body/form/div[contains(@class, 'form-item-dropzonejs')]";
+    $xpath_base = "//div[contains(@class, 'form-item-dropzonejs')]";
     // Label.
     $this->assertFalse($this->xpath("$xpath_base/label[text()='Not DropzoneJs element']"));
     $this->assertTrue($this->xpath("$xpath_base/label[text()='DropzoneJs element']"));
