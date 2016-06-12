@@ -31,17 +31,6 @@ class UploadHandler implements UploadHandlerInterface {
   protected $request;
 
   /**
-   * Stores temporary folder URI.
-   *
-   * This is configurable via the configuration variable. It was added for HA
-   * environments where temporary location may need to be a shared across all
-   * servers.
-   *
-   * @var string
-   */
-  protected $temporaryUploadLocation;
-
-  /**
    * Transliteration service.
    *
    * @var \Drupal\Core\Transliteration\PhpTransliteration
@@ -49,38 +38,26 @@ class UploadHandler implements UploadHandlerInterface {
   protected $transliteration;
 
   /**
+   * The scheme (stream wrapper) used to store uploaded files.
+   *
+   * @var string
+   */
+  protected $uploadScheme;
+
+  /**
    * Constructs dropzone upload controller route controller.
    *
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
-   *   Config factory.
-   * @param \Drupal\Core\Transliteration\PhpTransliteration $transliteration
+   * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
    *   Transliteration service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory service.
    */
-  public function __construct(RequestStack $request_stack, ConfigFactoryInterface $config, TransliterationInterface $transliteration) {
+  public function __construct(RequestStack $request_stack, TransliterationInterface $transliteration, ConfigFactoryInterface $config_factory) {
     $this->request = $request_stack->getCurrentRequest();
-    $tmp_override = $config->get('dropzonejs.settings')->get('tmp_dir');
-    $this->temporaryUploadLocation = $tmp_override ?: $config->get('system.file')->get('path.temporary');
     $this->transliteration = $transliteration;
-  }
-
-  /**
-   * Prepares temporary destination folder for uploaded files.
-   *
-   * @return bool
-   *   TRUE if destination folder looks OK and FALSE otherwise.
-   *
-   * @throws \Drupal\dropzonejs\UploadException
-   */
-  protected function prepareTemporaryUploadDestination() {
-    $writable = file_prepare_directory($this->temporaryUploadLocation, FILE_CREATE_DIRECTORY);
-    if (!$writable) {
-      throw new UploadException(UploadException::DESTINATION_FOLDER_ERROR);
-    }
-
-    // Try to make sure this is private via htaccess.
-    file_save_htaccess($this->temporaryUploadLocation, TRUE);
+    $this->uploadScheme = $config_factory->get('dropzonejs.settings')->get('upload_scheme');
   }
 
   /**
@@ -110,8 +87,6 @@ class UploadHandler implements UploadHandlerInterface {
    * {@inheritdoc}
    */
   public function handleUpload(UploadedFile $file) {
-    $this->prepareTemporaryUploadDestination();
-
     $error = $file->getError();
     if ($error != UPLOAD_ERR_OK) {
       // Check for file upload errors and return FALSE for this file if a lower
@@ -138,7 +113,7 @@ class UploadHandler implements UploadHandlerInterface {
     }
 
     // Open temp file.
-    $tmp = "{$this->temporaryUploadLocation}/{$this->getFilename($file)}";
+    $tmp = $this->uploadScheme . '://' . $this->getFilename($file);
     if (!($out = fopen($tmp, $this->request->request->get('chunk', 0) ? 'ab' : 'wb'))) {
       throw new UploadException(UploadException::OUTPUT_ERROR);
     }
