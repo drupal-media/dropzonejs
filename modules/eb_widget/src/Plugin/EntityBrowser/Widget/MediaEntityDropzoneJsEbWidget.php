@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\dropzonejs\DropzoneJsUploadSaveInterface;
 use Drupal\dropzonejs\Events\DropzoneMediaEntityCreateEvent;
@@ -117,9 +118,19 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
     }
 
     $bundles = $this->entityManager->getStorage('media_bundle')->loadMultiple();
-    foreach ($bundles as $bundle) {
-      $form['media_entity_bundle']['#options'][$bundle->id()] = $bundle->label();
+
+    if (!empty($bundles)) {
+      foreach ($bundles as $bundle) {
+        $form['media_entity_bundle']['#options'][$bundle->id()] = $bundle->label();
+      }
     }
+    else {
+      $form['media_entity_bundle']['#disabled'] = TRUE;
+      $form['media_entity_bundle']['#description'] = $this->t('You must @create_bundle before using this widget.', [
+        '@create_bundle' => Link::createFromRoute($this->t('create a media bundle'), 'media.bundle_add')->toString()
+      ]);
+    }
+
     return $form;
   }
 
@@ -184,5 +195,4 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
       $this->clearFormValues($element, $form_state);
     }
   }
-
 }
