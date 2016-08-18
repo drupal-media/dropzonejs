@@ -305,6 +305,13 @@ class DropzoneJsEbWidget extends WidgetBase {
       '#default_value' => $max_filesize,
     ];
 
+    $form['max_files'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Maximum amount of files'),
+      '#min' => '0',
+      '#default_value' => 0,
+    ];
+
     $form['extensions'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Allowed file extensions'),
@@ -343,6 +350,7 @@ class DropzoneJsEbWidget extends WidgetBase {
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     parent::submitConfigurationForm($form, $form_state);
     $this->configuration['max_filesize'] = $this->configuration['max_filesize'] . 'M';
+    $this->configuration['max_files'] = !empty($this->configuration['max_files']) ? $this->configuration['max_files'] : NULL;
   }
 
   /**
