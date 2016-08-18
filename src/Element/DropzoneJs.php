@@ -28,6 +28,9 @@ use Drupal\Core\Render\Element\FormElement;
  *   http://www.dropzonejs.com/#config-maxFilesize
  * - #extensions
  *   A string of valid extensions separated by a space.
+ * - #max_files
+ *   If #multiple is TRUE, the maximum number of files that can be uploaded.
+ *   If NULL, there is no limit.
  *
  * When submitted the element returns an array of temporary file locations. It's
  * the duty of the environment that implements this element to handle the
@@ -80,6 +83,12 @@ class DropzoneJs extends FormElement {
       $element['#max_filesize'] = file_upload_max_size();
     }
 
+    // If the element accepts multiple uploads, set #max_files to NULL
+    // (explicitly unlimited) if #max_files is not specified.
+    if (empty($element['#max_files'])) {
+      $element['#max_files'] = NULL;
+    }
+
     if (!\Drupal::currentUser()->hasPermission('dropzone upload files')) {
       $element['#access'] = FALSE;
       drupal_set_message("You don't have sufficent permissions to use the DropzoneJS uploader. Contact your system administrator", 'warning');
@@ -111,6 +120,7 @@ class DropzoneJs extends FormElement {
           'maxFilesize' => $max_size,
           'dictDefaultMessage' => $element['#dropzone_description'],
           'acceptedFiles' => '.' . str_replace(' ', ',.', self::getValidExtensions($element)),
+          'maxFiles' => $element['#max_files'],
         ],
       ],
     ];

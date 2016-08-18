@@ -108,6 +108,7 @@ class DropzoneJsEbWidget extends WidgetBase {
       'dropzone_description' => t('Drop files here to upload them'),
       'max_filesize' => file_upload_max_size() / pow(Bytes::KILOBYTE, 2) . 'M',
       'extensions' => 'jpg jpeg gif png txt doc xls pdf ppt pps odt ods odp',
+      'max_files' => NULL,
     ] + parent::defaultConfiguration();
   }
 
@@ -125,6 +126,7 @@ class DropzoneJsEbWidget extends WidgetBase {
       '#dropzone_description' => $config['settings']['dropzone_description'],
       '#max_filesize' => $config['settings']['max_filesize'],
       '#extensions' => $config['settings']['extensions'],
+      '#max_files' => $config['settings']['max_files'],
     ];
 
     // Disable the submit button until the upload sucesfully completed.
@@ -303,6 +305,13 @@ class DropzoneJsEbWidget extends WidgetBase {
       '#default_value' => $max_filesize,
     ];
 
+    $form['max_files'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Maximum amount of files'),
+      '#min' => '0',
+      '#default_value' => 0,
+    ];
+
     $form['extensions'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Allowed file extensions'),
@@ -341,6 +350,7 @@ class DropzoneJsEbWidget extends WidgetBase {
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     parent::submitConfigurationForm($form, $form_state);
     $this->configuration['max_filesize'] = $this->configuration['max_filesize'] . 'M';
+    $this->configuration['max_files'] = !empty($this->configuration['max_files']) ? $this->configuration['max_files'] : NULL;
   }
 
   /**
