@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\dropzonejs\UploadHandler.
- */
-
 namespace Drupal\dropzonejs;
 
 use Drupal\Component\Transliteration\TransliterationInterface;
@@ -55,7 +50,7 @@ class UploadHandler implements UploadHandlerInterface {
    *   The request stack.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Config factory.
-   * @param \Drupal\Core\Transliteration\PhpTransliteration $transliteration
+   * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
    *   Transliteration service.
    */
   public function __construct(RequestStack $request_stack, ConfigFactoryInterface $config, TransliterationInterface $transliteration) {
@@ -67,9 +62,6 @@ class UploadHandler implements UploadHandlerInterface {
 
   /**
    * Prepares temporary destination folder for uploaded files.
-   *
-   * @return bool
-   *   TRUE if destination folder looks OK and FALSE otherwise.
    *
    * @throws \Drupal\dropzonejs\UploadException
    */
@@ -154,7 +146,9 @@ class UploadHandler implements UploadHandlerInterface {
       fwrite($out, $buff);
     }
 
-    // Be nice and keep everything nice and clean.
+    // Be nice and keep everything nice and clean. Initial uploaded files are
+    // automatically removed by PHP at the end of the request so we don't need
+    // to do that.
     // @todo when implementing multipart don't forget to drupal_unlink.
     fclose($in);
     fclose($out);

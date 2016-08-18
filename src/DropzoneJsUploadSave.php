@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\dropzonejs\DropzoneJsUploadSave.
- */
-
 namespace Drupal\dropzonejs;
 
 use Drupal\Component\Render\PlainTextOutput;
@@ -16,12 +11,10 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Utility\Token;
 use Drupal\file\FileInterface;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
-use Symfony\Component\Validator\Constraints\File;
 use Drupal\Core\File\FileSystemInterface;
 
 /**
- * A service that saves files uploaded by the dropzonejs element as file
- * entities.
+ * A service that saves files uploaded by the dropzonejs element as files.
  *
  * Most of this file mimics or directly copies what core does. For more
  * information and comments see file_save_upload().
@@ -108,9 +101,20 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   /**
    * {@inheritdoc}
    */
-  public function saveFile($uri, $destination, $extensions, AccountProxyInterface $user, $validators = []) {
+  public function createFile($uri, $destination, $extensions, AccountProxyInterface $user, $validators = []) {
     // Create the file entity.
-    $file = $this->fileEntityFromUri($uri, $user);
+    $uri = file_stream_wrapper_uri_normalize($uri);
+    $file_info = new \SplFileInfo($uri);
+
+    /** @var \Drupal\file\FileInterface $file */
+    $file = $this->entityManager->getStorage('file')->create([
+      'uid' => $user->id(),
+      'status' => 0,
+      'filename' => $file_info->getFilename(),
+      'uri' => $uri,
+      'filesize' => $file_info->getSize(),
+      'filemime' => $this->mimeTypeGuesser->guess($uri),
+    ]);
 
     // Replace tokens. As the tokens might contain HTML we convert it to plain
     // text.
@@ -158,30 +162,6 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     // Set the permissions on the new file.
     $this->fileSystem->chmod($file->getFileUri());
 
-    // If we made it this far it's safe to record this file in the database.
-    $file->save();
-    return $file;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fileEntityFromUri($uri, AccountProxyInterface $user) {
-    $uri = file_stream_wrapper_uri_normalize($uri);
-    $file_info = new \SplFileInfo($uri);
-
-    // Begin building file entity.
-    $values = [
-      'uid' => $user->id(),
-      'status' => 0,
-      'filename' => $file_info->getFilename(),
-      'uri' => $uri,
-      'filesize' => $file_info->getSize(),
-      'filemime' => $this->mimeTypeGuesser->guess($uri),
-    ];
-
-    /** @var \Drupal\file\FileInterface $file */
-    $file = $this->entityManager->getStorage('file')->create($values);
     return $file;
   }
 
@@ -218,7 +198,6 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     }
     return FALSE;
   }
-
 
   /**
    * Validate and set destination the destination URI.

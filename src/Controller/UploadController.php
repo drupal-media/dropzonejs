@@ -7,12 +7,12 @@
 
 namespace Drupal\dropzonejs\Controller;
 
+use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\dropzonejs\UploadException;
 use Drupal\dropzonejs\UploadHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -73,11 +73,11 @@ class UploadController extends ControllerBase {
     // @todo: Implement file_validate_size();
     try {
       // Return JSON-RPC response.
-      return new JsonResponse([
+      return new AjaxResponse([
         'jsonrpc' => '2.0',
         'result' => basename($this->uploadHandler->handleUpload($file)),
         'id' => 'id',
-      ], 200);
+      ]);
     }
     catch (UploadException $e) {
       return $e->getErrorResponse();

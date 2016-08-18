@@ -79,12 +79,13 @@ class DropzoneJs extends FormElement {
       '#attributes' => ['data-upload-path' => \Drupal::url('dropzonejs.upload')],
     ];
 
-    if (empty($element['#multiple'])) {
-      $element['#max_files'] = 1;
+    if (empty($element['#max_filesize'])) {
+      $element['#max_filesize'] = file_upload_max_size();
     }
+
     // If the element accepts multiple uploads, set #max_files to NULL
     // (explicitly unlimited) if #max_files is not specified.
-    elseif (empty($element['#max_files'])) {
+    if (empty($element['#max_files'])) {
       $element['#max_files'] = NULL;
     }
 

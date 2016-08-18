@@ -1,18 +1,16 @@
 <?php
 
-/**
- * Contains \Drupal\dropzonejs_eb_widget\Plugin\EntityBrowser\Widget\DropzoneJsEbWidget.
- */
-
 namespace Drupal\dropzonejs_eb_widget\Plugin\EntityBrowser\Widget;
 
 use Drupal\Component\Utility\Bytes;
 use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Utility\Token;
 use Drupal\dropzonejs\DropzoneJsUploadSaveInterface;
 use Drupal\entity_browser\WidgetBase;
+use Drupal\entity_browser\WidgetValidationManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -42,6 +40,20 @@ class DropzoneJsEbWidget extends WidgetBase {
   protected $currentUser;
 
   /**
+   * The token service.
+   *
+   * @var \Drupal\Core\Utility\Token
+   */
+  protected $token;
+
+  /**
+   * Uploaded files.
+   *
+   * @var \Drupal\file\FileInterface[]
+   */
+  protected $files;
+
+  /**
    * Constructs widget plugin.
    *
    * @param array $configuration
@@ -52,15 +64,22 @@ class DropzoneJsEbWidget extends WidgetBase {
    *   The plugin implementation definition.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   Event dispatcher service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   * @param \Drupal\entity_browser\WidgetValidationManager $validation_manager
+   *   The Widget Validation Manager service.
    * @param \Drupal\dropzonejs\DropzoneJsUploadSaveInterface $dropzonejs_upload_save
    *   The upload saving dropzonejs service.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   The current user service.
+   * @param \Drupal\Core\Utility\Token $token
+   *   The token service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityManagerInterface $entity_manager, DropzoneJsUploadSaveInterface $dropzonejs_upload_save, AccountProxyInterface $current_user) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $event_dispatcher, $entity_manager);
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher, EntityTypeManagerInterface $entity_type_manager, WidgetValidationManager $validation_manager, DropzoneJsUploadSaveInterface $dropzonejs_upload_save, AccountProxyInterface $current_user, Token $token) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $event_dispatcher, $entity_type_manager, $validation_manager);
     $this->dropzoneJsUploadSave = $dropzonejs_upload_save;
     $this->currentUser = $current_user;
+    $this->token = $token;
   }
 
   /**
@@ -72,9 +91,11 @@ class DropzoneJsEbWidget extends WidgetBase {
       $plugin_id,
       $plugin_definition,
       $container->get('event_dispatcher'),
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
+      $container->get('plugin.manager.entity_browser.widget_validation'),
       $container->get('dropzonejs.upload_save'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('token')
     );
   }
 
@@ -94,7 +115,9 @@ class DropzoneJsEbWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function getForm(array &$original_form, FormStateInterface $form_state, array $aditional_widget_parameters) {
+  public function getForm(array &$original_form, FormStateInterface $form_state, array $additional_widget_parameters) {
+    $form = parent::getForm($original_form, $form_state, $additional_widget_parameters);
+
     $config = $this->getConfiguration();
     $form['upload'] = [
       '#title' => t('File upload'),
@@ -116,36 +139,82 @@ class DropzoneJsEbWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function validate(array &$form, FormStateInterface $form_state) {
-    $upload = $form_state->getValue(['upload'], []);
-    $trigger = $form_state->getTriggeringElement();
-    $config = $this->getConfiguration();
+  public function prepareEntities(array $form, FormStateInterface $form_state) {
+    return $this->getFiles($form, $form_state);
+  }
 
-    // Validation configuration.
-    $extensions = $config['settings']['extensions'];
-    $max_filesize = $config['settings']['max_filesize'];
+  /**
+   * Gets uploaded files.
+   *
+   * We implement this to allow child classes to operate on different entity
+   * type while still having access to the files in the validate callback here.
+   *
+   * @param array $form
+   *   Form structure.
+   * @param FormStateInterface $form_state
+   *   Form state object.
+   *
+   * @return \Drupal\file\FileInterface[]
+   *   Array of uploaded files.
+   */
+  protected function getFiles(array $form, FormStateInterface $form_state) {
+    $config = $this->getConfiguration();
+    $additional_validators = ['file_validate_size' => [Bytes::toInt($config['settings']['max_filesize']), 0]];
+    if (!$this->files) {
+      $this->files = [];
+      foreach ($form_state->getValue(['upload', 'uploaded_files'], []) as $file) {
+        $entity = $this->dropzoneJsUploadSave->createFile(
+          $file['path'],
+          $this->getUploadLocation(),
+          $config['settings']['extensions'],
+          $this->currentUser,
+          $additional_validators
+        );
+        $this->files[] = $entity;
+      }
+    }
+
+    return $this->files;
+  }
+
+  /**
+   * Gets upload location.
+   *
+   * @return string
+   *   Destination folder URI.
+   */
+  protected function getUploadLocation() {
+    return $this->token->replace($this->configuration['upload_location']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validate(array &$form, FormStateInterface $form_state) {
+    $trigger = $form_state->getTriggeringElement();
 
     // Validate if we are in fact uploading a files and all of them have the
     // right extensions. Although DropzoneJS should not even upload those files
     // it's still better not to rely only on client side validation.
-    if ($trigger['#value'] == 'Select') {
-      if (!empty($upload['uploaded_files'])) {
-        $errors = [];
-        // @todo Check per user size allowance.
-        $additional_validators = ['file_validate_size' => [Bytes::toInt($max_filesize), 0]];
-
-        foreach ($upload['uploaded_files'] as $file) {
-          $file = $this->dropzoneJsUploadSave->fileEntityFromUri($file['path'], $this->currentUser);
-          $errors += $this->dropzoneJsUploadSave->validateFile($file, $extensions, $additional_validators);
-        }
-
-        if (!empty($errors)) {
-          // @todo Output the actual errors from validateFile.
-          $form_state->setError($form['widget']['upload'], t('Some files that you are trying to upload did not pass validation. Requirements are: max file %size, allowed extensions are %extensions', ['%size' => $max_filesize, '%extensions' => $extensions]));
-        }
+    if ($trigger['#type'] == 'submit' && $trigger['#name'] == 'op') {
+      $upload_location = $this->getUploadLocation();
+      if (!file_prepare_directory($upload_location, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+        $form_state->setError($form['widget']['upload'], t('Files could not be uploaded because the destination directory %destination is not configured correctly.', ['%destination' => $this->getConfiguration()['settings']['upload_location']]));
       }
-      else {
+
+      $files = $this->getFiles($form, $form_state);
+      if (in_array(FALSE, $files)) {
+        // @todo Output the actual errors from validateFile.
+        $form_state->setError($form['widget']['upload'], t('Some files that you are trying to upload did not pass validation. Requirements are: max file %size, allowed extensions are %extensions', ['%size' => $this->getConfiguration()['settings']['max_filesize'], '%extensions' => $this->getConfiguration()['settings']['extensions']]));
+      }
+
+      if (empty($files)) {
         $form_state->setError($form['widget']['upload'], t('At least one valid file should be uploaded.'));
+      }
+
+      // If there weren't any errors set, run the normal validators.
+      if (empty($form_state->getErrors())) {
+        parent::validate($form, $form_state);
       }
     }
   }
@@ -155,18 +224,10 @@ class DropzoneJsEbWidget extends WidgetBase {
    */
   public function submit(array &$element, array &$form, FormStateInterface $form_state) {
     $files = [];
-    $upload = $form_state->getValue('upload');
-    $config = $this->getConfiguration();
-    $user = \Drupal::currentUser();
-
-    foreach ($upload['uploaded_files'] as $uploaded_file) {
-      $file = $this->dropzoneJsUploadSave->saveFile($uploaded_file['path'], $config['settings']['upload_location'], $config['settings']['extensions'], $user);
-
-      if ($file) {
-        $file->setPermanent();
-        $file->save();
-        $files[] = $file;
-      }
+    foreach ($this->prepareEntities($form, $form_state) as $file) {
+      $file->setPermanent();
+      $file->save();
+      $files[] = $file;
     }
 
     if (!empty(array_filter($files))) {
@@ -211,6 +272,84 @@ class DropzoneJsEbWidget extends WidgetBase {
       return FALSE;
     }
     return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildConfigurationForm($form, $form_state);
+
+    $configuration = $this->configuration;
+
+    $form['upload_location'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Upload location'),
+      '#default_value' => $configuration['upload_location'],
+    ];
+
+    $form['dropzone_description'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Dropzone drag-n-drop zone text'),
+      '#default_value' => $configuration['dropzone_description'],
+    ];
+
+    preg_match('%\d+%', $configuration['max_filesize'], $matches);
+    $max_filesize = !empty($matches) ? array_shift($matches) : '1';
+
+    $form['max_filesize'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Maximum size of files'),
+      '#min' => '0',
+      '#field_suffix' => $this->t('MB'),
+      '#default_value' => $max_filesize,
+    ];
+
+    $form['extensions'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Allowed file extensions'),
+      '#desciption' => $this->t('A space separated list of file extensions'),
+      '#default_value' => $configuration['extensions'],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $values = $form_state->getValues()['table'][$this->uuid()]['form'];
+
+    if (!empty($values['extensions'])) {
+      $extensions = explode(' ', $values['extensions']);
+      $fail = FALSE;
+
+      foreach ($extensions as $extension) {
+        if (preg_match('%^\w*$%', $extension) !== 1) {
+          $fail = TRUE;
+        }
+      }
+
+      if ($fail) {
+        $form_state->setErrorByName('extensions', $this->t('Invalid extension list format.'));
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    parent::submitConfigurationForm($form, $form_state);
+    $this->configuration['max_filesize'] = $this->configuration['max_filesize'] . 'M';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __sleep() {
+    return array_diff(parent::__sleep(), ['files']);
   }
 
 }
