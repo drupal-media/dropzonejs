@@ -11,6 +11,11 @@ dropzonejs:
   css:
     component:
       /libraries/dropzone/dist/min/dropzone.min.css: {}
+widget:
+  version: VERSION
+  css:
+    theme:
+      css/dropzone.widget.css: {}
 integration:
   version: VERSION
   js:

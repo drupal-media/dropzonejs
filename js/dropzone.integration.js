@@ -21,7 +21,7 @@
       // Initiate dropzonejs.
       var config = {
         url: input.attr('data-upload-path'),
-        addRemoveLinks: true
+        addRemoveLinks: false
       };
       var instanceConfig = drupalSettings.dropzonejs.instances[selector.attr('id')];
       if (instanceConfig.instance !== undefined) {
@@ -31,6 +31,14 @@
 
       // Other modules might need instances.
       drupalSettings["dropzonejs"]["instances"][selector.attr("id")]["instance"] = dropzoneInstance;
+
+      dropzoneInstance.on("addedfile", function (file) {
+        file._removeIcon = Dropzone.createElement("<div class='dropzonejs-remove-icon' title='Remove'></div>");
+        file.previewElement.appendChild(file._removeIcon);
+        file._removeIcon.addEventListener("click", function () {
+          dropzoneInstance.removeFile(file);
+        });
+      });
 
       // React on add file. Add only accepted files.
       dropzoneInstance.on("success", function (file, response) {
