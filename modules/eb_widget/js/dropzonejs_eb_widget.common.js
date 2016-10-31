@@ -29,7 +29,37 @@
               if (item.instance.getRejectedFiles().length == 0) {
                 $submit.removeAttr("disabled");
               }
+
+              // If there are no files in DropZone -> disable Button.
+              if (item.instance.getAcceptedFiles().length === 0) {
+                $submit.prop("disabled", true);
+              }
             });
+
+            if (drupalSettings.dropzonejs.auto_select) {
+              item.instance.on("queuecomplete", function () {
+                var dzInstance = item.instance;
+                var filesInQueue = dzInstance.getQueuedFiles();
+                var i, rejectedFiles;
+
+                if (filesInQueue.length === 0) {
+                  // Remove filed files.
+                  rejectedFiles = dzInstance.getRejectedFiles();
+                  for (i = 0; i < rejectedFiles.length; i++) {
+                    dzInstance.removeFile(rejectedFiles[i]);
+                  }
+
+                  // Ensure that there are some files that should be submitted.
+                  if (dzInstance.getAcceptedFiles().length > 0 && dzInstance.getUploadingFiles().length === 0) {
+                    jQuery(dzInstance.element)
+                      .parent()
+                      .siblings('[name="auto_select_handler"]')
+                      .trigger('auto_select_enity_browser_widget');
+                  }
+                }
+              });
+            }
+
           }
         });
       }
