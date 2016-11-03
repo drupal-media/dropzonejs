@@ -71,6 +71,14 @@
           uploadedFilesElement.attr('value', newValue);
         }
       });
+
+      // React on maxfilesexceeded. Remove all rejected files.
+      dropzoneInstance.on("maxfilesexceeded", function () {
+        var rejectedFiles = dropzoneInstance.getRejectedFiles();
+        for (var i = 0; i < rejectedFiles.length; i++) {
+          dropzoneInstance.removeFile(rejectedFiles[i]);
+        }
+      });
     }
   };
 

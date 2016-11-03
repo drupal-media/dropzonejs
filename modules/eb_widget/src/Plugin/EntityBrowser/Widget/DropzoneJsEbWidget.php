@@ -117,6 +117,11 @@ class DropzoneJsEbWidget extends WidgetBase {
   public function getForm(array &$original_form, FormStateInterface $form_state, array $additional_widget_parameters) {
     $form = parent::getForm($original_form, $form_state, $additional_widget_parameters);
 
+    $cardinality = 0;
+    $validators = $form_state->get(['entity_browser', 'validators']);
+    if (!empty($validators['cardinality']['cardinality'])) {
+      $cardinality = $validators['cardinality']['cardinality'];
+    }
     $config = $this->getConfiguration();
     $form['upload'] = [
       '#title' => t('File upload'),
@@ -125,6 +130,7 @@ class DropzoneJsEbWidget extends WidgetBase {
       '#dropzone_description' => $config['settings']['dropzone_description'],
       '#max_filesize' => $config['settings']['max_filesize'],
       '#extensions' => $config['settings']['extensions'],
+      '#max_files' => ($cardinality > 0) ? $cardinality : 0,
     ];
 
     $form['#attached']['library'][] = 'dropzonejs/widget';
