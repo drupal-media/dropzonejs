@@ -165,9 +165,18 @@ class DropzoneJsEbWidget extends WidgetBase {
   protected function getFiles(array $form, FormStateInterface $form_state) {
     $config = $this->getConfiguration();
     $additional_validators = ['file_validate_size' => [Bytes::toInt($config['settings']['max_filesize']), 0]];
+
     if (!$this->files) {
       $this->files = [];
-      foreach ($form_state->getValue(['upload', 'uploaded_files'], []) as $file) {
+
+      $files = $form_state->get(['dropzonejs', 'files']);
+      if ($files) {
+        $this->files = $files;
+        return $files;
+      }
+
+      // We do some casting because $form_state->getValue() might return NULL.
+      foreach ((array) $form_state->getValue(['upload', 'uploaded_files'], []) as $file) {
         $entity = $this->dropzoneJsUploadSave->createFile(
           $file['path'],
           $this->getUploadLocation(),
@@ -179,6 +188,7 @@ class DropzoneJsEbWidget extends WidgetBase {
       }
     }
 
+    $form_state->set(['dropzonejs', 'files'], $this->files);
     return $this->files;
   }
 

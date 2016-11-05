@@ -155,18 +155,22 @@ class DropzoneJs extends FormElement {
           $name = self::fixTmpFilename($name);
           $name = file_munge_filename($name, self::getValidExtensions($element));
 
-          // Finaly rename the file and add it to results.
-          $new_filepath = "$temp_path/$name";
-          $move_result = file_unmanaged_move($old_filepath, $new_filepath);
+          // Potentially we moved the file already, so let's check first whether
+          // we still have to move.
+          if (file_exists($old_filepath)) {
+            // Finaly rename the file and add it to results.
+            $new_filepath = "$temp_path/$name";
+            $move_result = file_unmanaged_move($old_filepath, $new_filepath);
 
-          if ($move_result) {
-            $return['uploaded_files'][] = [
-              'path' => $move_result,
-              'filename' => $name,
-            ];
-          }
-          else {
-            drupal_set_message(t('There was a problem while processing the file named @name', ['@name' => $name]), 'error');
+            if ($move_result) {
+              $return['uploaded_files'][] = [
+                'path' => $move_result,
+                'filename' => $name,
+              ];
+            }
+            else {
+              drupal_set_message(t('There was a problem while processing the file named @name', ['@name' => $name]), 'error');
+            }
           }
         }
       }
