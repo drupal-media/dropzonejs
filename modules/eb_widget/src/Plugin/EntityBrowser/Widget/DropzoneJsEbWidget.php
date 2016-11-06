@@ -142,7 +142,7 @@ class DropzoneJsEbWidget extends WidgetBase {
     $original_form['#attributes']['class'][] = 'dropzonejs-disable-submit';
 
     // Add hidden element used to make execution of auto-select of form.
-    if ($this->configuration['auto_select']) {
+    if ($config['settings']['auto_select']) {
       $form['auto_select_handler'] = [
         '#type' => 'hidden',
         '#name' => 'auto_select_handler',
@@ -158,8 +158,6 @@ class DropzoneJsEbWidget extends WidgetBase {
           ],
         ],
       ];
-
-      $form['#attached']['drupalSettings']['dropzonejs']['auto_select'] = $this->configuration['auto_select'];
     }
 
     return $form;
@@ -278,7 +276,9 @@ class DropzoneJsEbWidget extends WidgetBase {
    */
   protected function selectEntities(array $entities, FormStateInterface $form_state) {
     if (!empty(array_filter($entities))) {
-      if ($this->configuration['auto_select']) {
+      $config = $this->getConfiguration();
+
+      if ($config['settings']['auto_select']) {
         $form_state->set('added_entities', $entities);
       }
       else {
@@ -436,7 +436,7 @@ class DropzoneJsEbWidget extends WidgetBase {
       // Add Invoke command to select uploaded entities.
       $ajax->addCommand(
         new InvokeCommand('.entities-list', 'trigger', [
-          'load-entities',
+          'add-entities',
           [$entity_ids],
         ])
       );

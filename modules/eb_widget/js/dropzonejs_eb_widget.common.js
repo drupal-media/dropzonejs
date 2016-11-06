@@ -36,7 +36,7 @@
               }
             });
 
-            if (drupalSettings.dropzonejs.auto_select) {
+            if (drupalSettings.entity_browser_widget.auto_select) {
               item.instance.on("queuecomplete", function () {
                 var dzInstance = item.instance;
                 var filesInQueue = dzInstance.getQueuedFiles();
