@@ -278,13 +278,12 @@ class DropzoneJsEbWidget extends WidgetBase {
     if (!empty(array_filter($entities))) {
       $config = $this->getConfiguration();
 
-      if ($config['settings']['auto_select']) {
-        $form_state->set('added_entities', $entities);
-      }
-      else {
+      if (!$config['settings']['auto_select']) {
         parent::selectEntities($entities, $form_state);
       }
     }
+
+    $form_state->set(['dropzonejs', 'added_entities'], $entities);
   }
 
   /**
@@ -420,12 +419,13 @@ class DropzoneJsEbWidget extends WidgetBase {
     if (($triggering_element = $form_state->getTriggeringElement()) && $triggering_element['#name'] === 'auto_select_handler') {
       $entity_ids = [];
 
-      $added_entities = $form_state->get('added_entities');
+      $added_entities = $form_state->get(['dropzonejs', 'added_entities']);
       /** @var \Drupal\Core\Entity\EntityInterface $entity */
-      foreach ($added_entities as $entity) {
-        $entity_ids[] = $entity->getEntityTypeId() . ':' . $entity->id();
+      if (!empty($added_entities)) {
+        foreach ($added_entities as $entity) {
+          $entity_ids[] = $entity->getEntityTypeId() . ':' . $entity->id();
+        }
       }
-      $form_state->unsetValue('added_entities');
 
       // Add command to clear list of uploaded files. It's important to set
       // empty string value, in other case it will act as getter.

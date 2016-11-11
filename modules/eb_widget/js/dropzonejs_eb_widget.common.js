@@ -37,24 +37,28 @@
             });
 
             if (drupalSettings.entity_browser_widget.auto_select) {
-              item.instance.on("queuecomplete", function () {
+              item.instance.on('queuecomplete', function () {
                 var dzInstance = item.instance;
                 var filesInQueue = dzInstance.getQueuedFiles();
-                var i, rejectedFiles;
+                var acceptedFiles;
+                var i;
 
                 if (filesInQueue.length === 0) {
-                  // Remove filed files.
-                  rejectedFiles = dzInstance.getRejectedFiles();
-                  for (i = 0; i < rejectedFiles.length; i++) {
-                    dzInstance.removeFile(rejectedFiles[i]);
-                  }
+                  acceptedFiles = dzInstance.getAcceptedFiles();
 
                   // Ensure that there are some files that should be submitted.
-                  if (dzInstance.getAcceptedFiles().length > 0 && dzInstance.getUploadingFiles().length === 0) {
+                  if (acceptedFiles.length > 0 && dzInstance.getUploadingFiles().length === 0) {
+                    // First submit accepted files and clear them from list of
+                    // dropped files afterwards.
                     jQuery(dzInstance.element)
                       .parent()
                       .siblings('[name="auto_select_handler"]')
                       .trigger('auto_select_enity_browser_widget');
+
+                    // Remove accepted files -> because they are submitted.
+                    for (i = 0; i < acceptedFiles.length; i++) {
+                      dzInstance.removeFile(acceptedFiles[i]);
+                    }
                   }
                 }
               });
