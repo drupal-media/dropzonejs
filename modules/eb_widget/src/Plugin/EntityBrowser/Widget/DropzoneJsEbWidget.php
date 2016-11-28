@@ -11,6 +11,7 @@ use Drupal\Core\Utility\Token;
 use Drupal\dropzonejs\DropzoneJsUploadSaveInterface;
 use Drupal\entity_browser\WidgetBase;
 use Drupal\entity_browser\WidgetValidationManager;
+use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -45,13 +46,6 @@ class DropzoneJsEbWidget extends WidgetBase {
    * @var \Drupal\Core\Utility\Token
    */
   protected $token;
-
-  /**
-   * Uploaded files.
-   *
-   * @var \Drupal\file\FileInterface[]
-   */
-  protected $files;
 
   /**
    * Constructs widget plugin.
@@ -166,17 +160,15 @@ class DropzoneJsEbWidget extends WidgetBase {
     $config = $this->getConfiguration();
     $additional_validators = ['file_validate_size' => [Bytes::toInt($config['settings']['max_filesize']), 0]];
 
-    if (!$this->files) {
-      $this->files = [];
+    $files = $form_state->get(['dropzonejs', $this->uuid(), 'files']);
 
-      $files = $form_state->get(['dropzonejs', 'files']);
-      if ($files) {
-        $this->files = $files;
-        return $files;
-      }
+    if (!$files) {
+      $files = [];
+    }
 
-      // We do some casting because $form_state->getValue() might return NULL.
-      foreach ((array) $form_state->getValue(['upload', 'uploaded_files'], []) as $file) {
+    // We do some casting because $form_state->getValue() might return NULL.
+    foreach ((array) $form_state->getValue(['upload', 'uploaded_files'], []) as $file) {
+      if (file_exists($file['path'])) {
         $entity = $this->dropzoneJsUploadSave->createFile(
           $file['path'],
           $this->getUploadLocation(),
@@ -184,12 +176,13 @@ class DropzoneJsEbWidget extends WidgetBase {
           $this->currentUser,
           $additional_validators
         );
-        $this->files[] = $entity;
+        $files[] = $entity;
       }
     }
 
-    $form_state->set(['dropzonejs', 'files'], $this->files);
-    return $this->files;
+    $form_state->set(['dropzonejs', $this->uuid(), 'files'], $files);
+
+    return $files;
   }
 
   /**
@@ -264,6 +257,7 @@ class DropzoneJsEbWidget extends WidgetBase {
     // remove them from our values.
     $form_state->setValueForElement($element['upload']['uploaded_files'], '');
     NestedArray::setValue($form_state->getUserInput(), $element['upload']['uploaded_files']['#parents'], '');
+    $form_state->set(['dropzonejs', $this->uuid(), 'files'], []);
   }
 
   /**
