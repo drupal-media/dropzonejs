@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\dropzonejs\src\Element.
- */
-
 namespace Drupal\dropzonejs\Element;
 
 use Drupal\Component\Utility\Bytes;

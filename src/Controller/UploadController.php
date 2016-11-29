@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\dropzonejs\Controller\UploadController.
- */
-
 namespace Drupal\dropzonejs\Controller;
 
 use Drupal\Core\Ajax\AjaxResponse;

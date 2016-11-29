@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\dropzonejs\Events\Events.
- */
-
 namespace Drupal\dropzonejs\Events;
 
 /**

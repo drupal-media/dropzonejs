@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\dropzonejs\Events\DropzoneMediaEntityCreateEvent.
- */
-
 namespace Drupal\dropzonejs\Events;
 
 use Drupal\Core\Form\FormStateInterface;

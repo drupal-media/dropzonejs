@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\dropzonejs\UploadException.
- */
-
 namespace Drupal\dropzonejs;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
