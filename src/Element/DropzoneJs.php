@@ -6,6 +6,7 @@ use Drupal\Component\Utility\Bytes;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\FormElement;
+use Drupal\Core\Url;
 
 /**
  * Provides a DropzoneJS atop of the file element.
@@ -71,7 +72,7 @@ class DropzoneJs extends FormElement {
       // If we send a url with a token through drupalSettings the placeholder
       // doesn't get replaced, because the actual scripts markup is not there
       // yet. So we pass this information through a data attribute.
-      '#attributes' => ['data-upload-path' => \Drupal::url('dropzonejs.upload')],
+      '#attributes' => ['data-upload-path' => Url::fromRoute('dropzonejs.upload')->toString()],
     ];
 
     if (empty($element['#max_filesize'])) {

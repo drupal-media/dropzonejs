@@ -4,7 +4,7 @@ namespace Drupal\dropzonejs;
 
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -24,9 +24,9 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   /**
    * Entity manager service.
    *
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * Mime type guesser service.
@@ -73,8 +73,8 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   /**
    * Construct the DropzoneUploadSave object.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   Entity manager service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   Entity type manager service.
    * @param \Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface $mimetype_guesser
    *   The mime type guesser service.
    * @param \Drupal\Core\File\FileSystemInterface $file_system
@@ -88,8 +88,8 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
    * @param \Drupal\Core\Utility\Token $token
    *   The token service.
    */
-  public function __construct(EntityManagerInterface $entity_manager, MimeTypeGuesserInterface $mimetype_guesser, FileSystemInterface $file_system, LoggerChannelFactoryInterface $logger_factory, RendererInterface $renderer, ConfigFactoryInterface $config_factory, Token $token) {
-    $this->entityManager = $entity_manager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, MimeTypeGuesserInterface $mimetype_guesser, FileSystemInterface $file_system, LoggerChannelFactoryInterface $logger_factory, RendererInterface $renderer, ConfigFactoryInterface $config_factory, Token $token) {
+    $this->entityTypeManager = $entity_type_manager;
     $this->mimeTypeGuesser = $mimetype_guesser;
     $this->fileSystem = $file_system;
     $this->logger = $logger_factory->get('dropzonejs');
@@ -107,7 +107,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     $file_info = new \SplFileInfo($uri);
 
     /** @var \Drupal\file\FileInterface $file */
-    $file = $this->entityManager->getStorage('file')->create([
+    $file = $this->entityTypeManager->getStorage('file')->create([
       'uid' => $user->id(),
       'status' => 0,
       'filename' => $file_info->getFilename(),
@@ -214,8 +214,8 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
    */
   protected function prepareDestination(FileInterface $file, $destination) {
     // Assert that the destination contains a valid stream.
-    $destination_scheme = file_uri_scheme($destination);
-    if (!file_stream_wrapper_valid_scheme($destination_scheme)) {
+    $destination_scheme = $this->fileSystem->uriScheme($destination);
+    if (!$this->fileSystem->validScheme($destination_scheme)) {
       return FALSE;
     }
 
@@ -228,8 +228,8 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     if (substr($destination, -1) != '/') {
       $destination .= '/';
     }
-    $file->destination = file_destination($destination . $file->getFilename(), FILE_EXISTS_RENAME);
-    $file->setFileUri($file->destination);
+    $destination = file_destination($destination . $file->getFilename(), FILE_EXISTS_RENAME);
+    $file->setFileUri($destination);
     return TRUE;
   }
 
