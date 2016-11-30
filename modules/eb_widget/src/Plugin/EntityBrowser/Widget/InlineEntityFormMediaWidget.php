@@ -171,4 +171,14 @@ class InlineEntityFormMediaWidget extends MediaEntityDropzoneJsEbWidget {
       $this->clearFormValues($element, $form_state);
     }
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function clearFormValues(array &$element, FormStateInterface $form_state) {
+    parent::clearFormValues($element, $form_state);
+    // Clear uploaded_entities to get a clean form in multi-step selection.
+    $form_state->set('uploaded_entities', []);
+  }
+
 }
