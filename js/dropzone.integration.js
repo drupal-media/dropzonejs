@@ -14,6 +14,8 @@
   Drupal.behaviors.dropzonejsIntegraion = {
     attach: function (context) {
       Dropzone.autoDiscover = false;
+
+      // TODO: init functionality should support multiple drop zones on page
       var selector = $(".dropzone-enable");
       selector.addClass("dropzone");
       var input = selector.siblings('input');
@@ -24,9 +26,20 @@
         addRemoveLinks: false
       };
       var instanceConfig = drupalSettings.dropzonejs.instances[selector.attr('id')];
+
+      // if DropzoneJS instance is already registered on Element. There is no
+      // need to register it again.
+      if (selector.once('register-dropzonejs').length !== selector.length) {
+        return;
+      }
+
+      // If instance exists for configuration, but it's detached from element
+      // then destroy detached instance and create new instance.
       if (instanceConfig.instance !== undefined) {
         instanceConfig.instance.destroy();
       }
+
+      // Initialize DropzoneJS instance for element.
       var dropzoneInstance = new Dropzone("#" + selector.attr("id"), $.extend({}, instanceConfig, config));
 
       // Other modules might need instances.

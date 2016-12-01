@@ -4,6 +4,8 @@ namespace Drupal\dropzonejs_eb_widget\Plugin\EntityBrowser\Widget;
 
 use Drupal\Component\Utility\Bytes;
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -21,7 +23,8 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * @EntityBrowserWidget(
  *   id = "dropzonejs",
  *   label = @Translation("DropzoneJS"),
- *   description = @Translation("Adds DropzoneJS upload integration.")
+ *   description = @Translation("Adds DropzoneJS upload integration."),
+ *   autoSelect = TRUE
  * )
  */
 class DropzoneJsEbWidget extends WidgetBase {
@@ -132,6 +135,25 @@ class DropzoneJsEbWidget extends WidgetBase {
     $form['#attached']['library'][] = 'dropzonejs_eb_widget/common';
     $original_form['#attributes']['class'][] = 'dropzonejs-disable-submit';
 
+    // Add hidden element used to make execution of auto-select of form.
+    if ($config['settings']['auto_select']) {
+      $form['auto_select_handler'] = [
+        '#type' => 'hidden',
+        '#name' => 'auto_select_handler',
+        '#id' => 'auto_select_handler',
+        '#attributes' => ['id' => 'auto_select_handler'],
+        '#submit' => ['::submitForm'],
+        '#executes_submit_callback' => TRUE,
+        '#ajax' => [
+          'callback' => [get_class($this), 'handleAjaxCommand'],
+          'event' => 'auto_select_enity_browser_widget',
+          'progress' => [
+            'type' => 'fullscreen',
+          ],
+        ],
+      ];
+    }
+
     return $form;
   }
 
@@ -238,10 +260,23 @@ class DropzoneJsEbWidget extends WidgetBase {
       $files[] = $file;
     }
 
-    if (!empty(array_filter($files))) {
-      $this->selectEntities($files, $form_state);
-      $this->clearFormValues($element, $form_state);
+    $this->selectEntities($files, $form_state);
+    $this->clearFormValues($element, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function selectEntities(array $entities, FormStateInterface $form_state) {
+    if (!empty(array_filter($entities))) {
+      $config = $this->getConfiguration();
+
+      if (!$config['settings']['auto_select']) {
+        parent::selectEntities($entities, $form_state);
+      }
     }
+
+    $form_state->set(['dropzonejs', 'added_entities'], $entities);
   }
 
   /**
@@ -359,6 +394,49 @@ class DropzoneJsEbWidget extends WidgetBase {
    */
   public function __sleep() {
     return array_diff(parent::__sleep(), ['files']);
+  }
+
+  /**
+   * Handling of automated submit of uploaded files.
+   *
+   * @param array $form
+   *   Form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *   Returns ajax commands that will be executed in front-end.
+   */
+  public static function handleAjaxCommand(array $form, FormStateInterface $form_state) {
+    $ajax = new AjaxResponse();
+
+    if (($triggering_element = $form_state->getTriggeringElement()) && $triggering_element['#name'] === 'auto_select_handler') {
+      $entity_ids = [];
+
+      $added_entities = $form_state->get(['dropzonejs', 'added_entities']);
+      /** @var \Drupal\Core\Entity\EntityInterface $entity */
+      if (!empty($added_entities)) {
+        foreach ($added_entities as $entity) {
+          $entity_ids[] = $entity->getEntityTypeId() . ':' . $entity->id();
+        }
+      }
+
+      // Add command to clear list of uploaded files. It's important to set
+      // empty string value, in other case it will act as getter.
+      $ajax->addCommand(
+        new InvokeCommand('[data-drupal-selector="edit-upload-uploaded-files"]', 'val', [''])
+      );
+
+      // Add Invoke command to select uploaded entities.
+      $ajax->addCommand(
+        new InvokeCommand('.entities-list', 'trigger', [
+          'add-entities',
+          [$entity_ids],
+        ])
+      );
+    }
+
+    return $ajax;
   }
 
 }
