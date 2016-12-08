@@ -10,3 +10,15 @@ ief_edit:
     js/dropzonejs_eb_widget.ief_edit.js: {}
   dependencies:
     - dropzonejs_eb_widget/common
+jquery-form-submit-single:
+  version: VERSION
+  js:
+    js/jquery.form-submit-single.js: {}
+  dependencies:
+    - core/jquery
+form_submit_single:
+  version: VERSION
+  js:
+    js/dropzonejs_eb_widget.form_submit_single.js: {}
+  dependencies:
+    - dropzonejs_eb_widget/jquery-form-submit-single
