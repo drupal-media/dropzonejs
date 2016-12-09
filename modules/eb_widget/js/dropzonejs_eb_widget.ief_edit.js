@@ -16,10 +16,25 @@
             var $submit = $form.find('.is-entity-browser-submit');
             $submit.prop("disabled", false);
 
-            item.instance.on("queuecomplete", function () {
+            var autoSubmitDropzone = function() {
               var $form = this;
-              $('#edit-edit', $form).trigger('mousedown');
-            }.bind($form));
+
+              // Trigger generation of IEF form only, when there are new
+              // accepted files and there are no rejected files.
+              if (item.instance.getAcceptedFiles().length > 0 && item.instance.getRejectedFiles().length === 0) {
+                $('#edit-edit', $form).trigger('mousedown');
+
+                item.instance.removeAllFiles();
+              }
+            }.bind($form);
+
+            item.instance.on("queuecomplete", function() {
+              autoSubmitDropzone();
+            });
+
+            item.instance.on("removedfile", function() {
+              autoSubmitDropzone();
+            });
           }
         });
       }
