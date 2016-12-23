@@ -17,7 +17,18 @@ function dropzonejs_requirements($phase) {
     $path = libraries_get_path('dropzone') . '/dist/min/dropzone.min.js';
   }
 
-  if (!file_exists($path)) {
+  // Is the library found in the root libraries path.
+  $library_found = file_exists($path);
+
+  // If library is not found, then look in the current profile libraries path.
+  if (!$library_found) {
+    $profile_path = drupal_get_path('profile', drupal_get_profile());
+    $profile_path .= '/libraries/dropzone/dist/min/dropzone.min.js';
+    // Is the library found in the current profile libraries path.
+    $library_found = file_exists($profile_path);
+  }
+
+  if (!$library_found) {
     $requirements['dropzonejs_library'] = array(
       'title' => t('Dropzone library missing'),
       'description' => t('Dropzonejs requires the dropzone.min.js library.
