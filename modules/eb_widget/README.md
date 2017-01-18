@@ -21,5 +21,3 @@ multiple files using the DropzoneJS library.
 	      id: dropzonejs
 	      
 3. The sample content type should be upldated with the new widget.
-
-

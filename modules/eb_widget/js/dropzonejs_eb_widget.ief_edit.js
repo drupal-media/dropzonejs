@@ -4,19 +4,19 @@
  * Bundles various dropzone eb widget behaviours.
  */
 (function ($, Drupal, drupalSettings) {
-  "use strict";
+  'use strict';
 
   Drupal.behaviors.dropzonejsPostIntegrationEbWidgetEditJs = {
-    attach: function(context) {
-      if (typeof drupalSettings.dropzonejs.instances !== "undefined") {
+    attach: function (context) {
+      if (typeof drupalSettings.dropzonejs.instances !== 'undefined') {
         _.each(drupalSettings.dropzonejs.instances, function (item) {
           var $form = $(item.instance.element).parents('form');
 
-          if ($form.hasClass("dropzonejs-disable-submit")) {
+          if ($form.hasClass('dropzonejs-disable-submit')) {
             var $submit = $form.find('.is-entity-browser-submit');
-            $submit.prop("disabled", false);
+            $submit.prop('disabled', false);
 
-            var autoSubmitDropzone = function() {
+            var autoSubmitDropzone = function () {
               var $form = this;
 
               // Trigger generation of IEF form only, when there are new
@@ -28,11 +28,11 @@
               }
             }.bind($form);
 
-            item.instance.on("queuecomplete", function() {
+            item.instance.on('queuecomplete', function () {
               autoSubmitDropzone();
             });
 
-            item.instance.on("removedfile", function() {
+            item.instance.on('removedfile', function () {
               autoSubmitDropzone();
             });
           }

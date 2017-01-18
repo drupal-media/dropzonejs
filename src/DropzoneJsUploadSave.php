@@ -31,14 +31,14 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   /**
    * Mime type guesser service.
    *
-   * @var \Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
+   * @var \Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface
    */
   protected $mimeTypeGuesser;
 
   /**
    * The file system service.
    *
-   * @var \Drupal\Core\File\FileSystemInterface;
+   * @var \Drupal\Core\File\FileSystemInterface
    */
   protected $fileSystem;
 

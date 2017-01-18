@@ -56,7 +56,7 @@ class DropzoneJs extends FormElement {
       '#theme_wrappers' => ['form_element'],
       '#tree' => TRUE,
       '#attached' => [
-        'library' => ['dropzonejs/integration']
+        'library' => ['dropzonejs/integration'],
       ],
     ];
   }
@@ -87,7 +87,7 @@ class DropzoneJs extends FormElement {
 
     if (!\Drupal::currentUser()->hasPermission('dropzone upload files')) {
       $element['#access'] = FALSE;
-      drupal_set_message("You don't have sufficent permissions to use the DropzoneJS uploader. Contact your system administrator", 'warning');
+      drupal_set_message(t("You don't have sufficent permissions to use the DropzoneJS uploader. Contact your system administrator"), 'warning');
     }
 
     return $element;
@@ -129,8 +129,7 @@ class DropzoneJs extends FormElement {
    * {@inheritdoc}
    */
   public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
-    $file_names = [];
-    $return['uploaded_files'] = NULL;
+    $return['uploaded_files'] = [];
 
     if ($input !== FALSE) {
       $user_input = NestedArray::getValue($form_state->getUserInput(), $element['#parents'] + ['uploaded_files']);
@@ -171,9 +170,8 @@ class DropzoneJs extends FormElement {
         }
       }
       $form_state->setValueForElement($element, $return);
-
-      return $return;
     }
+    return $return;
   }
 
   /**
@@ -206,4 +204,5 @@ class DropzoneJs extends FormElement {
     array_pop($parts);
     return implode('.', $parts);
   }
+
 }

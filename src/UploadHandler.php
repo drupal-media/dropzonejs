@@ -20,7 +20,7 @@ class UploadHandler implements UploadHandlerInterface {
   /**
    * The current request.
    *
-   * @var \Symfony\Component\HttpFoundation\Request $request
+   * @var \Symfony\Component\HttpFoundation\Request
    *   The HTTP request object.
    */
   protected $request;

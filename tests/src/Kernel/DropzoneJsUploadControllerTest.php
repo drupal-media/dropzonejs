@@ -93,4 +93,5 @@ class DropzoneJsUploadControllerTest extends KernelTestBase {
     $this->assertTrue(file_exists($result_file));
     $this->assertEquals(file_get_contents($result_file), $this->testfileData);
   }
+
 }

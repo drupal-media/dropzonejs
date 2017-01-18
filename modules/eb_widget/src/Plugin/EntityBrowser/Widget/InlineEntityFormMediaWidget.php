@@ -2,7 +2,6 @@
 
 namespace Drupal\dropzonejs_eb_widget\Plugin\EntityBrowser\Widget;
 
-use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\dropzonejs\Events\DropzoneMediaEntityCreateEvent;
@@ -99,6 +98,7 @@ class InlineEntityFormMediaWidget extends MediaEntityDropzoneJsEbWidget {
     $media_entities = $this->prepareEntities($form, $form_state);
     $source_field = $this->getBundle()->getTypeConfiguration()['source_field'];
     foreach ($media_entities as $media_entity) {
+      /** @var \Drupal\file\Entity\File $file */
       $file = $media_entity->$source_field->entity;
       $file->save();
       $media_entity->$source_field->target_id = $file->id();
@@ -142,7 +142,7 @@ class InlineEntityFormMediaWidget extends MediaEntityDropzoneJsEbWidget {
   protected function prepareEntitiesFromForm($form, FormStateInterface $form_state) {
     $media_entities = [];
     foreach (Element::children($form['widget']['entities']) as $key) {
-      /** @var ContentEntityInterface $entity */
+      /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
       $entity = $form['widget']['entities'][$key]['#entity'];
       $inline_entity_form_handler = InlineEntityForm::getInlineFormHandler($entity->getEntityTypeId());
       $inline_entity_form_handler->entityFormSubmit($form['widget']['entities'][$key], $form_state);

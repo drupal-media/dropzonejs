@@ -11,16 +11,15 @@ use Drupal\Core\Routing\RouteMatchInterface;
  * Implements hook_help().
  */
 function dropzonejs_help($route_name, RouteMatchInterface $route_match) {
+  $output = '';
   switch ($route_name) {
     // Main module help for the dropzonejs module.
     case 'help.page.dropzonejs':
-      $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('DropzoneJS') . '</p>';
-      return $output;
-
     default:
   }
+  return $output;
 }
 
 /**

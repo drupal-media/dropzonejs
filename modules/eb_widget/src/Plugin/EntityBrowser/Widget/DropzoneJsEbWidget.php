@@ -11,7 +11,6 @@ use Drupal\Core\Utility\Token;
 use Drupal\dropzonejs\DropzoneJsUploadSaveInterface;
 use Drupal\entity_browser\WidgetBase;
 use Drupal\entity_browser\WidgetValidationManager;
-use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 

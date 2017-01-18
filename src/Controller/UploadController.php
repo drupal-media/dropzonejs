@@ -26,7 +26,7 @@ class UploadController extends ControllerBase {
   /**
    * The current request.
    *
-   * @var \Symfony\Component\HttpFoundation\Request $request
+   * @var \Symfony\Component\HttpFoundation\Request
    *   The HTTP request object.
    */
   protected $request;
@@ -34,12 +34,10 @@ class UploadController extends ControllerBase {
   /**
    * Constructs dropzone upload controller route controller.
    *
+   * @param \Drupal\dropzonejs\UploadHandlerInterface $upload_handler
+   *   Upload handler.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Request object.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
-   *   Config factory.
-   * @param \Drupal\Core\Transliteration\PhpTransliteration $transliteration
-   *   Transliteration service.
    */
   public function __construct(UploadHandlerInterface $upload_handler, Request $request) {
     $this->uploadHandler = $upload_handler;
