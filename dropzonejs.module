@@ -54,6 +54,9 @@ function template_preprocess_dropzonejs(&$variables) {
     $variables['attributes']['class'] = (array) $element['#attributes']['class'];
   }
 
+  $variables['dropzone_description'] = $element['#dropzone_description'];
+  $variables['or_text'] = t('or');
+  $variables['select_files_button_text'] = t('Select files');
   $variables['uploaded_files'] = $element['uploaded_files'];
 }
 

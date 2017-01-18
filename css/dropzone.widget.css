@@ -19,6 +19,22 @@
   background-size: cover;
 }
 
-.dropzone .dz-preview.dz-file-preview .dz-image, .dropzone .dz-preview .dz-image {
+.dropzone .dz-preview.dz-file-preview .dz-image,
+.dropzone .dz-preview .dz-image {
   border-radius: 0;
+}
+
+.dropzone {
+  margin: .5em;
+  background: #f5f5f2;
+  border: 3px dashed hsla(0, 0%, 42%, 0.65);
+  border-radius: 5px;
+}
+
+.dropzone.dz-drag-hover {
+  border: dashed #40b6ff;
+}
+
+.dropzone.dz-started {
+  padding: 16px;
 }
