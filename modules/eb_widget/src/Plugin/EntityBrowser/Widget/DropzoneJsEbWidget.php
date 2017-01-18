@@ -131,6 +131,9 @@ class DropzoneJsEbWidget extends WidgetBase {
     $form['#attached']['library'][] = 'dropzonejs_eb_widget/common';
     $original_form['#attributes']['class'][] = 'dropzonejs-disable-submit';
 
+    // Attach one-time-submit logic.
+    $form['#attached']['library'][] = 'dropzonejs_eb_widget/form_submit_single';
+
     return $form;
   }
 
@@ -204,24 +207,31 @@ class DropzoneJsEbWidget extends WidgetBase {
     // right extensions. Although DropzoneJS should not even upload those files
     // it's still better not to rely only on client side validation.
     if ($trigger['#type'] == 'submit' && $trigger['#name'] == 'op') {
-      $upload_location = $this->getUploadLocation();
-      if (!file_prepare_directory($upload_location, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
-        $form_state->setError($form['widget']['upload'], t('Files could not be uploaded because the destination directory %destination is not configured correctly.', ['%destination' => $this->getConfiguration()['settings']['upload_location']]));
-      }
+      $lock = \Drupal::lock();
+      if ($lock->acquire('dropzone_file_upload_lock_' . $form_state->getValue('form_token'))) {
+        $upload_location = $this->getUploadLocation();
+        if (!file_prepare_directory($upload_location, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+          $form_state->setError($form['widget']['upload'], t('Files could not be uploaded because the destination directory %destination is not configured correctly.', ['%destination' => $this->getConfiguration()['settings']['upload_location']]));
+        }
 
-      $files = $this->getFiles($form, $form_state);
-      if (in_array(FALSE, $files)) {
-        // @todo Output the actual errors from validateFile.
-        $form_state->setError($form['widget']['upload'], t('Some files that you are trying to upload did not pass validation. Requirements are: max file %size, allowed extensions are %extensions', ['%size' => $this->getConfiguration()['settings']['max_filesize'], '%extensions' => $this->getConfiguration()['settings']['extensions']]));
-      }
+        $files = $this->getFiles($form, $form_state);
+        if (in_array(FALSE, $files)) {
+          // @todo Output the actual errors from validateFile.
+          $form_state->setError($form['widget']['upload'], t('Some files that you are trying to upload did not pass validation. Requirements are: max file %size, allowed extensions are %extensions', ['%size' => $this->getConfiguration()['settings']['max_filesize'], '%extensions' => $this->getConfiguration()['settings']['extensions']]));
+        }
 
-      if (empty($files)) {
-        $form_state->setError($form['widget']['upload'], t('At least one valid file should be uploaded.'));
-      }
+        if (empty($files)) {
+          $form_state->setError($form['widget']['upload'], t('At least one valid file should be uploaded.'));
+        }
 
-      // If there weren't any errors set, run the normal validators.
-      if (empty($form_state->getErrors())) {
-        parent::validate($form, $form_state);
+        // If there weren't any errors set, run the normal validators.
+        if (empty($form_state->getErrors())) {
+          parent::validate($form, $form_state);
+        }
+        $lock->release('dropzone_file_upload_lock_' . $form_state->getValue('form_token'));
+      }
+      else {
+        \Drupal::logger('DropzoneJsEbWidget')->notice('Form with token @form_token already submitted.', ['@form_token' => $form_state->getValue('form_token')]);
       }
     }
   }
