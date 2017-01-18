@@ -98,7 +98,7 @@ class DropzoneJsEbWidget extends WidgetBase {
   public function defaultConfiguration() {
     return [
       'upload_location' => 'public://[date:custom:Y]-[date:custom:m]',
-      'dropzone_description' => t('Drop files here to upload them'),
+      'dropzone_description' => $this->t('Drop files here to upload them'),
       'max_filesize' => file_upload_max_size() / pow(Bytes::KILOBYTE, 2) . 'M',
       'extensions' => 'jpg jpeg gif png txt doc xls pdf ppt pps odt ods odp',
     ] + parent::defaultConfiguration();
@@ -117,7 +117,7 @@ class DropzoneJsEbWidget extends WidgetBase {
     }
     $config = $this->getConfiguration();
     $form['upload'] = [
-      '#title' => t('File upload'),
+      '#title' => $this->t('File upload'),
       '#type' => 'dropzonejs',
       '#required' => TRUE,
       '#dropzone_description' => $config['settings']['dropzone_description'],
@@ -206,17 +206,17 @@ class DropzoneJsEbWidget extends WidgetBase {
     if ($trigger['#type'] == 'submit' && $trigger['#name'] == 'op') {
       $upload_location = $this->getUploadLocation();
       if (!file_prepare_directory($upload_location, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
-        $form_state->setError($form['widget']['upload'], t('Files could not be uploaded because the destination directory %destination is not configured correctly.', ['%destination' => $this->getConfiguration()['settings']['upload_location']]));
+        $form_state->setError($form['widget']['upload'], $this->t('Files could not be uploaded because the destination directory %destination is not configured correctly.', ['%destination' => $this->getConfiguration()['settings']['upload_location']]));
       }
 
       $files = $this->getFiles($form, $form_state);
       if (in_array(FALSE, $files)) {
         // @todo Output the actual errors from validateFile.
-        $form_state->setError($form['widget']['upload'], t('Some files that you are trying to upload did not pass validation. Requirements are: max file %size, allowed extensions are %extensions', ['%size' => $this->getConfiguration()['settings']['max_filesize'], '%extensions' => $this->getConfiguration()['settings']['extensions']]));
+        $form_state->setError($form['widget']['upload'], $this->t('Some files that you are trying to upload did not pass validation. Requirements are: max file %size, allowed extensions are %extensions', ['%size' => $this->getConfiguration()['settings']['max_filesize'], '%extensions' => $this->getConfiguration()['settings']['extensions']]));
       }
 
       if (empty($files)) {
-        $form_state->setError($form['widget']['upload'], t('At least one valid file should be uploaded.'));
+        $form_state->setError($form['widget']['upload'], $this->t('At least one valid file should be uploaded.'));
       }
 
       // If there weren't any errors set, run the normal validators.

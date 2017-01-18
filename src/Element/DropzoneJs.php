@@ -104,7 +104,7 @@ class DropzoneJs extends FormElement {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderDropzoneJs($element) {
+  public static function preRenderDropzoneJs(array $element) {
     // Convert the human size input to bytes, convert it to MB and round it.
     $max_size = round(Bytes::toInt($element['#max_filesize']) / pow(Bytes::KILOBYTE, 2), 2);
 
@@ -183,7 +183,7 @@ class DropzoneJs extends FormElement {
    * @return string
    *   A space separated list of extensions.
    */
-  public static function getValidExtensions($element) {
+  public static function getValidExtensions(array $element) {
     return isset($element['#extensions']) ? $element['#extensions'] : self::DEFAULT_VALID_EXTENSIONS;
   }
 

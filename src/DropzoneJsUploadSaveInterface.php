@@ -35,14 +35,14 @@ interface DropzoneJsUploadSaveInterface {
    *   The file entity of the newly uploaded file or false in case of a failure.
    *   The file isn't saved yet. That should be handled by the caller.
    */
-  public function createFile($uri, $destination, $extensions, AccountProxyInterface $user, $validators = []);
+  public function createFile($uri, $destination, $extensions, AccountProxyInterface $user, array $validators = []);
 
   /**
    * Validate the uploaded file.
    *
    * @param \Drupal\file\FileInterface $file
    *   The file entity object.
-   * @param array $extensions
+   * @param string $extensions
    *   A space separated string of valid extensions.
    * @param array $additional_validators
    *   An optional, associative array of callback functions used to validate the

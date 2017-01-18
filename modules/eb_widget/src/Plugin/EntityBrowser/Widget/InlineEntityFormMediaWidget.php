@@ -139,7 +139,7 @@ class InlineEntityFormMediaWidget extends MediaEntityDropzoneJsEbWidget {
    * @return \Drupal\media_entity\MediaInterface[]
    *   The prepared media entities.
    */
-  protected function prepareEntitiesFromForm($form, FormStateInterface $form_state) {
+  protected function prepareEntitiesFromForm(array $form, FormStateInterface $form_state) {
     $media_entities = [];
     foreach (Element::children($form['widget']['entities']) as $key) {
       /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */

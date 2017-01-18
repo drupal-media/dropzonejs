@@ -42,7 +42,7 @@ function dropzonejs_theme() {
  *   An associative array containing:
  *   - element: A render element representing the file.
  */
-function template_preprocess_dropzonejs(&$variables) {
+function template_preprocess_dropzonejs(array &$variables) {
   $element = $variables['element'];
 
   $variables['attributes'] = [];

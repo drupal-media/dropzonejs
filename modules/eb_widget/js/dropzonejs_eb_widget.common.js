@@ -1,8 +1,10 @@
 /**
- * @file dropzonejs_eb_widget.common.js
+ * @file
+ * dropzonejs_eb_widget.common.js
  *
  * Bundles various dropzone eb widget behaviours.
  */
+
 (function ($, Drupal, drupalSettings) {
   'use strict';
 

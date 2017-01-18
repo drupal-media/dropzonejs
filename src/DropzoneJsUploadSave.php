@@ -101,7 +101,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   /**
    * {@inheritdoc}
    */
-  public function createFile($uri, $destination, $extensions, AccountProxyInterface $user, $validators = []) {
+  public function createFile($uri, $destination, $extensions, AccountProxyInterface $user, array $validators = []) {
     // Create the file entity.
     $uri = file_stream_wrapper_uri_normalize($uri);
     $file_info = new \SplFileInfo($uri);

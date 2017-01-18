@@ -1,11 +1,10 @@
 /**
- * @file dropzone.integration.js
+ * @file
+ * dropzone.integration.js
  *
  * Defines the behaviors needed for dropzonejs integration.
- *
- * @todo Implement maxfilesexceeded.
- *
  */
+
 (function ($, Drupal, drupalSettings) {
   'use strict';
 
@@ -95,6 +94,5 @@
       });
     }
   };
-
 
 }(jQuery, Drupal, drupalSettings));

@@ -61,7 +61,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
    * @param array $element
    *   The Dropzone form element.
    */
-  public function __construct(MediaInterface $media_entity, FileInterface $file, $form, FormStateInterface $form_state, $element) {
+  public function __construct(MediaInterface $media_entity, FileInterface $file, array $form, FormStateInterface $form_state, array $element) {
     $this->mediaEntity = $media_entity;
     $this->file = $file;
     $this->form = $form;
@@ -145,7 +145,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
    * @param array $element
    *   The updated form element.
    */
-  public function setElement($element) {
+  public function setElement(array $element) {
     $this->element = $element;
   }
 
