@@ -24,7 +24,8 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * @EntityBrowserWidget(
  *   id = "dropzonejs_media_entity_inline_entity_form",
  *   label = @Translation("Media Entity DropzoneJS with edit"),
- *   description = @Translation("Adds DropzoneJS upload integration that saves Media entities and allows to edit them.")
+ *   description = @Translation("Adds DropzoneJS upload integration that saves Media entities and allows to edit them."),
+ *   auto_select = FALSE
  * )
  */
 class InlineEntityFormMediaWidget extends MediaEntityDropzoneJsEbWidget {

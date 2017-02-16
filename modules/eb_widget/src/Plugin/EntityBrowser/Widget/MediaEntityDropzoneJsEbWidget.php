@@ -24,7 +24,8 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * @EntityBrowserWidget(
  *   id = "dropzonejs_media_entity",
  *   label = @Translation("Media Entity DropzoneJS"),
- *   description = @Translation("Adds DropzoneJS upload integration that saves Media entities.")
+ *   description = @Translation("Adds DropzoneJS upload integration that saves Media entities."),
+ *   auto_select = TRUE
  * )
  */
 class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
@@ -193,10 +194,8 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
       $media_entity->save();
     }
 
-    if (!empty(array_filter($media_entities))) {
-      $this->selectEntities($media_entities, $form_state);
-      $this->clearFormValues($element, $form_state);
-    }
+    $this->selectEntities($media_entities, $form_state);
+    $this->clearFormValues($element, $form_state);
   }
 
 }
