@@ -202,6 +202,10 @@ class DropzoneJsEbWidget extends WidgetBase {
       }
     }
 
+    if ($form['widget']['upload']['#max_files']) {
+      $files = array_slice($files, -$form['widget']['upload']['#max_files']);
+    }
+
     $form_state->set(['dropzonejs', $this->uuid(), 'files'], $files);
 
     return $files;
