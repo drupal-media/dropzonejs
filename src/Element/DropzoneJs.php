@@ -48,9 +48,7 @@ class DropzoneJs extends FormElement {
     $class = get_class($this);
     return [
       '#input' => TRUE,
-      '#multiple' => FALSE,
       '#process' => [[$class, 'processDropzoneJs']],
-      '#size' => 60,
       '#pre_render' => [[$class, 'preRenderDropzoneJs']],
       '#theme' => 'dropzonejs',
       '#theme_wrappers' => ['form_element'],
@@ -62,7 +60,7 @@ class DropzoneJs extends FormElement {
   }
 
   /**
-   * Processes a dropzone upload element, make use of #multiple if present.
+   * Processes a dropzone upload element.
    */
   public static function processDropzoneJs(&$element, FormStateInterface $form_state, &$complete_form) {
     $element['uploaded_files'] = [
@@ -79,8 +77,8 @@ class DropzoneJs extends FormElement {
       $element['#max_filesize'] = file_upload_max_size();
     }
 
-    // If the element accepts multiple uploads, set #max_files to NULL
-    // (explicitly unlimited) if #max_files is not specified.
+    // Set #max_files to NULL (explicitly unlimited) if #max_files is not
+    // specified.
     if (empty($element['#max_files'])) {
       $element['#max_files'] = NULL;
     }
