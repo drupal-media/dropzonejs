@@ -40,3 +40,14 @@ function dropzonejs_requirements($phase) {
 
   return $requirements;
 }
+
+/**
+ * The upload handler should use stream wrappers.
+ */
+function dropzonejs_update_8001() {
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable('dropzonejs.settings');
+  $config->clear('tmp_dir');
+  $config->set('tmp_upload_scheme', 'temporary');
+  $config->save(TRUE);
+}

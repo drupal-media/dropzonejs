@@ -134,13 +134,12 @@ class DropzoneJs extends FormElement {
 
       if (!empty($user_input['uploaded_files'])) {
         $file_names = array_filter(explode(';', $user_input['uploaded_files']));
-        $tmp_override = \Drupal::config('dropzonejs.settings')->get('tmp_dir');
-        $temp_path = ($tmp_override) ? $tmp_override : \Drupal::config('system.file')->get('path.temporary');
+        $tmp_upload_scheme = \Drupal::configFactory()->get('dropzonejs.settings')->get('tmp_upload_scheme');
 
         foreach ($file_names as $name) {
           // The upload handler appended the txt extension to the file for
           // security reasons. We will remove it in this callback.
-          $old_filepath = "$temp_path/$name";
+          $old_filepath = $tmp_upload_scheme . '://' . $name;
 
           // The upload handler appended the txt extension to the file for
           // security reasons. Because here we know the acceptable extensions
@@ -152,7 +151,7 @@ class DropzoneJs extends FormElement {
           // we still have to move.
           if (file_exists($old_filepath)) {
             // Finaly rename the file and add it to results.
-            $new_filepath = "$temp_path/$name";
+            $new_filepath = $tmp_upload_scheme . '://' . $name;
             $move_result = file_unmanaged_move($old_filepath, $new_filepath);
 
             if ($move_result) {

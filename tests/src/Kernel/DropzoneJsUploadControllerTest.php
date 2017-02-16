@@ -58,6 +58,7 @@ class DropzoneJsUploadControllerTest extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
     $this->installSchema('system', 'router');
+    $this->installConfig('dropzonejs');
     $this->installEntitySchema('user');
 
     $this->filesDir = $this->siteDirectory . '/files';
