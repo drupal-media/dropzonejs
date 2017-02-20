@@ -69,3 +69,6 @@ entity_browser.browser.widget.dropzonejs_media_entity_inline_entity_form:
     extensions:
       type: string
       label: 'Allowed file extensions'
+    form_mode:
+      type: string
+      label: 'Form mode'
