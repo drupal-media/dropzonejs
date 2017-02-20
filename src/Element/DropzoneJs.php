@@ -3,6 +3,7 @@
 namespace Drupal\dropzonejs\Element;
 
 use Drupal\Component\Utility\Bytes;
+use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\FormElement;
@@ -112,7 +113,7 @@ class DropzoneJs extends FormElement {
         // options.
         $element['#id'] => [
           'maxFilesize' => $max_size,
-          'dictDefaultMessage' => $element['#dropzone_description'],
+          'dictDefaultMessage' => Html::escape($element['#dropzone_description']),
           'acceptedFiles' => '.' . str_replace(' ', ',.', self::getValidExtensions($element)),
           'maxFiles' => $element['#max_files'],
         ],
