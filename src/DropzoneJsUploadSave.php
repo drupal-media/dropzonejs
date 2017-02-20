@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Utility\Token;
 use Drupal\file\FileInterface;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
@@ -20,6 +21,8 @@ use Drupal\Core\File\FileSystemInterface;
  * information and comments see file_save_upload().
  */
 class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
+
+  use StringTranslationTrait;
 
   /**
    * Entity manager service.
@@ -126,7 +129,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     // to add it here or else the file upload will fail.
     if ($renamed && !empty($extensions)) {
       $extensions .= ' txt';
-      drupal_set_message(t('For security reasons, your upload has been renamed to %filename.', ['%filename' => $file->getFilename()]));
+      drupal_set_message($this->t('For security reasons, your upload has been renamed to %filename.', ['%filename' => $file->getFilename()]));
     }
 
     // Validate the file.
@@ -134,7 +137,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     if (!empty($errors)) {
       $message = [
         'error' => [
-          '#markup' => t('The specified file %name could not be uploaded.', ['%name' => $file->getFilename()]),
+          '#markup' => $this->t('The specified file %name could not be uploaded.', ['%name' => $file->getFilename()]),
         ],
         'item_list' => [
           '#theme' => 'item_list',
@@ -147,14 +150,14 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
 
     // Prepare destination.
     if (!$this->prepareDestination($file, $destination)) {
-      drupal_set_message(t('The file could not be uploaded because the destination %destination is invalid.', ['%destination' => $destination]), 'error');
+      drupal_set_message($this->t('The file could not be uploaded because the destination %destination is invalid.', ['%destination' => $destination]), 'error');
       return FALSE;
     }
 
     // Move uploaded files from PHP's upload_tmp_dir to destination.
     $move_result = file_unmanaged_move($uri, $file->getFileUri());
     if (!$move_result) {
-      drupal_set_message(t('File upload error. Could not move uploaded file.'), 'error');
+      drupal_set_message($this->t('File upload error. Could not move uploaded file.'), 'error');
       $this->logger->notice('Upload error. Could not move uploaded file %file to destination %destination.', ['%file' => $file->getFilename(), '%destination' => $file->getFileUri()]);
       return FALSE;
     }

@@ -85,7 +85,7 @@ class DropzoneJs extends FormElement {
 
     if (!\Drupal::currentUser()->hasPermission('dropzone upload files')) {
       $element['#access'] = FALSE;
-      drupal_set_message(t("You don't have sufficent permissions to use the DropzoneJS uploader. Contact your system administrator"), 'warning');
+      drupal_set_message(self::t("You don't have sufficent permissions to use the DropzoneJS uploader. Contact your system administrator"), 'warning');
     }
 
     return $element;
@@ -161,7 +161,7 @@ class DropzoneJs extends FormElement {
               ];
             }
             else {
-              drupal_set_message(t('There was a problem while processing the file named @name', ['@name' => $name]), 'error');
+              drupal_set_message(self::t('There was a problem while processing the file named @name', ['@name' => $name]), 'error');
             }
           }
         }

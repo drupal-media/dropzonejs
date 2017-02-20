@@ -5,6 +5,7 @@ namespace Drupal\dropzonejs;
 use Drupal\Component\Transliteration\TransliterationInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Drupal\Component\Utility\Unicode;
@@ -18,6 +19,8 @@ use Drupal\Component\Utility\Unicode;
  * filename will be provided only after that callback.
  */
 class UploadHandler implements UploadHandlerInterface {
+
+  use StringTranslationTrait;
 
   /**
    * The current request.
@@ -116,17 +119,17 @@ class UploadHandler implements UploadHandlerInterface {
       switch ($error) {
         case UPLOAD_ERR_INI_SIZE:
         case UPLOAD_ERR_FORM_SIZE:
-          $message = t('The file could not be saved because it exceeds the maximum allowed size for uploads.');
+          $message = $this->t('The file could not be saved because it exceeds the maximum allowed size for uploads.');
           continue;
 
         case UPLOAD_ERR_PARTIAL:
         case UPLOAD_ERR_NO_FILE:
-          $message = t('The file could not be saved because the upload did not complete.');
+          $message = $this->t('The file could not be saved because the upload did not complete.');
           continue;
 
         // Unknown error.
         default:
-          $message = t('The file could not be saved. An unknown error has occurred.');
+          $message = $this->t('The file could not be saved. An unknown error has occurred.');
           continue;
       }
 
