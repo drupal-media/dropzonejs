@@ -187,6 +187,7 @@ class MediaEntityDropzoneJsEbWidget extends DropzoneJsEbWidget {
       /** @var \Drupal\dropzonejs\Events\DropzoneMediaEntityCreateEvent $event */
       $event = $this->eventDispatcher->dispatch(Events::MEDIA_ENTITY_CREATE, new DropzoneMediaEntityCreateEvent($media_entity, $file, $form, $form_state, $element));
       $media_entity = $event->getMediaEntity();
+      $source_field = $media_entity->get('bundle')->entity->getTypeConfiguration()['source_field'];
       // If we don't save file at this point Media entity creates another file
       // entity with same uri for the thumbnail. That should probably be fixed
       // in Media entity, but this workaround should work for now.
