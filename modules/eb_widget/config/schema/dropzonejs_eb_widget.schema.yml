@@ -25,7 +25,7 @@ entity_browser.browser.widget.dropzonejs_media_entity:
   type: mapping
   label: 'Media Entity DropzoneJS widget configuration'
   mapping:
-    media_entity_bundle:
+    media_type:
       type: string
       label: 'Media type'
     submit_text:
@@ -51,7 +51,7 @@ entity_browser.browser.widget.dropzonejs_media_entity_inline_entity_form:
   type: mapping
   label: 'Media Entity DropzoneJS with edit widget configuration'
   mapping:
-    media_entity_bundle:
+    media_type:
       type: string
       label: 'Media type'
     submit_text:

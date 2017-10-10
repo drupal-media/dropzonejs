@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * @file
+ * Install function hooks for the DropzoneJS entity browser widget module.
+ */
+
+use Drupal\dropzonejs_eb_widget\Plugin\EntityBrowser\Widget\MediaEntityDropzoneJsEbWidget;
+use Drupal\entity_browser\Entity\EntityBrowser;
+
+/**
+ * Update configurations for configuration key renaming.
+ */
+function dropzonejs_eb_widget_update_8201() {
+
+  $logger = \Drupal::logger('dropzonejs');
+
+  /** @var \Drupal\entity_browser\Entity\EntityBrowser[] $entity_browsers */
+  $entity_browsers = EntityBrowser::loadMultiple();
+
+  foreach ($entity_browsers as $entity_browser) {
+    /** @var \Drupal\entity_browser\WidgetInterface[] $widgets */
+    $widgets = $entity_browser->getWidgets();
+
+    $has_config_changes = FALSE;
+    foreach ($widgets as $widget) {
+      if ($widget instanceof MediaEntityDropzoneJsEbWidget) {
+        $config = $widget->getConfiguration();
+
+        if (!empty($config['settings']['media_entity_bundle']) && empty($config['settings']['media_type'])) {
+          $config['settings']['media_type'] = $config['settings']['media_entity_bundle'];
+          unset($config['settings']['media_entity_bundle']);
+          $widget->setConfiguration($config);
+
+          $has_config_changes = TRUE;
+          $logger->info(sprintf('Configuration changed for widget (%s) of entity browser (%s)', $widget->label(), $entity_browser->label()));
+        }
+        else {
+          $logger->warning(sprintf('Unable to change configuration for widget (%s) of entity browser (%s)', $widget->label(), $entity_browser->label()));
+        }
+      }
+    }
+
+    if ($has_config_changes) {
+      $entity_browser->save();
+    }
+  }
+
+}

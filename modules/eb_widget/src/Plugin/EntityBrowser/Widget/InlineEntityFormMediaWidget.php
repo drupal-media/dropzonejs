@@ -171,7 +171,7 @@ class InlineEntityFormMediaWidget extends MediaEntityDropzoneJsEbWidget {
 
     // Files have to saved before they can be viewed in the IEF form.
     $media_entities = $this->prepareEntities($form, $form_state);
-    $source_field = $this->getBundle()->getTypeConfiguration()['source_field'];
+    $source_field = $this->getType()->getSource()->getSourceFieldDefinition($this->getType())->getName();
     foreach ($media_entities as $media_entity) {
       /** @var \Drupal\file\Entity\File $file */
       $file = $media_entity->$source_field->entity;
@@ -211,7 +211,7 @@ class InlineEntityFormMediaWidget extends MediaEntityDropzoneJsEbWidget {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    *
-   * @return \Drupal\media_entity\MediaInterface[]
+   * @return \Drupal\media\MediaInterface[]
    *   The prepared media entities.
    */
   protected function prepareEntitiesFromForm(array $form, FormStateInterface $form_state) {
@@ -231,7 +231,7 @@ class InlineEntityFormMediaWidget extends MediaEntityDropzoneJsEbWidget {
    */
   public function submit(array &$element, array &$form, FormStateInterface $form_state) {
     $media_entities = $this->prepareEntitiesFromForm($form, $form_state);
-    $source_field = $this->getBundle()->getTypeConfiguration()['source_field'];
+    $source_field = $this->getType()->getSource()->getSourceFieldDefinition($this->getType())->getName();
 
     foreach ($media_entities as $media_entity) {
       $file = $media_entity->{$source_field}->entity;

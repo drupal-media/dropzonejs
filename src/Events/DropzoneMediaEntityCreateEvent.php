@@ -4,7 +4,7 @@ namespace Drupal\dropzonejs\Events;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\file\FileInterface;
-use Drupal\media_entity\MediaInterface;
+use Drupal\media\MediaInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -15,7 +15,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
   /**
    * The media entity being created.
    *
-   * @var \Drupal\media_entity\MediaInterface
+   * @var \Drupal\media\MediaInterface
    */
   protected $mediaEntity;
 
@@ -50,7 +50,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
   /**
    * DropzoneMediaEntityCreateEvent constructor.
    *
-   * @param \Drupal\media_entity\MediaInterface $media_entity
+   * @param \Drupal\media\MediaInterface $media_entity
    *   The media entity being created.
    * @param \Drupal\file\FileInterface $file
    *   The file that will be used for the media entity.
@@ -72,7 +72,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
   /**
    * Get the media entity.
    *
-   * @return \Drupal\media_entity\MediaInterface
+   * @return \Drupal\media\MediaInterface
    *   A media entity.
    */
   public function getMediaEntity() {
@@ -82,7 +82,7 @@ class DropzoneMediaEntityCreateEvent extends Event {
   /**
    * Set the media entity.
    *
-   * @param \Drupal\media_entity\MediaInterface $media_entity
+   * @param \Drupal\media\MediaInterface $media_entity
    *   The updated media entity.
    */
   public function setMediaEntity(MediaInterface $media_entity) {
