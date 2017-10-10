@@ -52,9 +52,7 @@
                   if (acceptedFiles.length > 0 && dzInstance.getUploadingFiles().length === 0) {
                     // First submit accepted files and clear them from list of
                     // dropped files afterwards.
-                    jQuery(dzInstance.element)
-                      .parent()
-                      .siblings('[name="auto_select_handler"]')
+                    $form.find('[id="auto_select_handler"]')
                       .trigger('auto_select_enity_browser_widget');
 
                     // Remove accepted files -> because they are submitted.
