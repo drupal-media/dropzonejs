@@ -23,17 +23,22 @@ function dropzonejs_eb_widget_update_8201() {
     /** @var \Drupal\entity_browser\WidgetInterface[] $widgets */
     $widgets = $entity_browser->getWidgets();
 
+    $entity_browser_config = \Drupal::configFactory()->getEditable('entity_browser.browser.' . $entity_browser->id());
+
     $has_config_changes = FALSE;
     foreach ($widgets as $widget) {
       if ($widget instanceof MediaEntityDropzoneJsEbWidget) {
         $config = $widget->getConfiguration();
 
         if (!empty($config['settings']['media_entity_bundle']) && empty($config['settings']['media_type'])) {
-          $config['settings']['media_type'] = $config['settings']['media_entity_bundle'];
-          unset($config['settings']['media_entity_bundle']);
-          $widget->setConfiguration($config);
-
           $has_config_changes = TRUE;
+
+          $widget_id = $widget->getConfiguration()['uuid'];
+          $value = $entity_browser_config->get('widgets.' . $widget_id . '.settings.media_entity_bundle');
+
+          $entity_browser_config->set('widgets.' . $widget_id . '.settings.media_type', $value);
+          $entity_browser_config->clear('widgets.' . $widget_id . '.settings.media_entity_bundle');
+
           $logger->info(sprintf('Configuration changed for widget (%s) of entity browser (%s)', $widget->label(), $entity_browser->label()));
         }
         else {
@@ -43,7 +48,7 @@ function dropzonejs_eb_widget_update_8201() {
     }
 
     if ($has_config_changes) {
-      $entity_browser->save();
+      $entity_browser_config->save();
     }
   }
 
