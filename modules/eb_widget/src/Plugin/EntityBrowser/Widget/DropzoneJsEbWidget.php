@@ -104,6 +104,12 @@ class DropzoneJsEbWidget extends WidgetBase {
       'dropzone_description' => $this->t('Drop files here to upload them'),
       'max_filesize' => file_upload_max_size() / pow(Bytes::KILOBYTE, 2) . 'M',
       'extensions' => 'jpg jpeg gif png txt doc xls pdf ppt pps odt ods odp',
+      'clientside_resize' => FALSE,
+      'resize_width' => NULL,
+      'resize_height' => NULL,
+      'resize_quality' => 1,
+      'resize_method' => 'contain',
+      'thumbnail_method' => 'contain',
     ] + parent::defaultConfiguration();
   }
 
@@ -127,7 +133,16 @@ class DropzoneJsEbWidget extends WidgetBase {
       '#max_filesize' => $config['settings']['max_filesize'],
       '#extensions' => $config['settings']['extensions'],
       '#max_files' => ($cardinality > 0) ? $cardinality : 0,
+      '#clientside_resize' => $config['settings']['clientside_resize'],
     ];
+
+    if ($config['settings']['clientside_resize']) {
+      $form['upload']['#resize_width'] = $config['settings']['resize_width'];
+      $form['upload']['#resize_height'] = $config['settings']['resize_height'];
+      $form['upload']['#resize_quality'] = $config['settings']['resize_quality'];
+      $form['upload']['#resize_method'] = $config['settings']['resize_method'];
+      $form['upload']['#thumbnail_method'] = $config['settings']['thumbnail_method'];
+    }
 
     $form['#attached']['library'][] = 'dropzonejs/widget';
     // Disable the submit button until the upload sucesfully completed.
@@ -358,6 +373,107 @@ class DropzoneJsEbWidget extends WidgetBase {
       '#title' => $this->t('Allowed file extensions'),
       '#desciption' => $this->t('A space separated list of file extensions'),
       '#default_value' => $configuration['extensions'],
+    ];
+
+
+    $exif_found = \Drupal::service('library.discovery')->getLibraryByName('dropzonejs', 'exif-js');
+
+    $form['clientside_resize'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Use client side resizing'),
+      '#default_value' => $configuration['clientside_resize'],
+    ];
+
+    if (!$exif_found) {
+      $form['clientside_resize']['#description'] = $this->t('Requires droopzone version v4.4.0 or higher and the <a href="@exif" target="_blank">exif</a> library.', ['@exif' => 'https://github.com/exif-js/exif-js']);
+
+      // We still want to provide a way to disable this if the library does not
+      // exist.
+      if ($configuration['clientside_resize'] == FALSE) {
+        $form['clientside_resize']['#disabled'] = TRUE;
+      }
+    }
+
+    $form['resize_width'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Max width'),
+      '#default_value' => $configuration['resize_width'],
+      '#size' => 60,
+      '#field_suffix' => 'px',
+      '#min' => 0,
+      '#states' => [
+        'visible' => [
+          ':input[name="table[' . $this->uuid() .  '][form][clientside_resize]"]' => [
+            'checked' => TRUE,
+          ],
+        ]
+      ]
+    ];
+
+    $form['resize_height'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Max height'),
+      '#default_value' => $configuration['resize_height'],
+      '#size' => 60,
+      '#field_suffix' => 'px',
+      '#min' => 0,
+      '#states' => [
+        'visible' => [
+          ':input[name="table[' . $this->uuid() .  '][form][clientside_resize]"]' => [
+            'checked' => TRUE,
+          ],
+        ]
+      ]
+    ];
+
+    $form['resize_quality'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Resize quality'),
+      '#default_value' => $configuration['resize_quality'],
+      '#min' => 0,
+      '#max' => 1,
+      '#step' => 0.1,
+      '#states' => [
+        'visible' => [
+          ':input[name="table[' . $this->uuid() .  '][form][clientside_resize]"]' => [
+            'checked' => TRUE,
+          ],
+        ]
+      ]
+    ];
+
+    $form['resize_method'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Resize method'),
+      '#default_value' => $configuration['resize_method'],
+      '#options' => [
+        'contain' => $this->t('Contain (scale)'),
+        'crop' => $this->t('Crop'),
+      ],
+      '#states' => [
+        'visible' => [
+          ':input[name="table[' . $this->uuid() .  '][form][clientside_resize]"]' => [
+            'checked' => TRUE,
+          ],
+        ]
+      ]
+    ];
+
+    $form['thumbnail_method'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Thumbnail method'),
+      '#default_value' => $configuration['thumbnail_method'],
+      '#options' => [
+        'contain' => $this->t('Contain (scale)'),
+        'crop' => $this->t('Crop'),
+      ],
+      '#states' => [
+        'visible' => [
+          ':input[name="table[' . $this->uuid() .  '][form][clientside_resize]"]' => [
+            'checked' => TRUE,
+          ],
+        ]
+      ]
     ];
 
     return $form;
