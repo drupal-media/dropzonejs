@@ -60,11 +60,48 @@ function template_preprocess_dropzonejs(array &$variables) {
 }
 
 /**
+ * Implements hook_library_info_build().
+ */
+function dropzonejs_library_info_build() {
+  $libraries = [];
+
+  if (\Drupal::moduleHandler()->moduleExists('libraries')) {
+    $exif_path = libraries_get_path('exif-js') . '/exif.js';
+  }
+  else {
+    $exif_path = DRUPAL_ROOT . '/libraries/exif-js/exif.js';
+  }
+
+  if ($exif_found = file_exists($exif_path)) {
+    $libraries['exif-js'] = [
+      'title' => 'Exif',
+      'website' => 'https://github.com/exif-js/exif-js',
+      'version' => 'v2.3.0',
+      'license' => [
+        'name' => 'MIT',
+        'url' => 'https://github.com/exif-js/exif-js/blob/master/LICENSE.md',
+        'gpl-compatible' => TRUE,
+      ],
+      'js' => [
+        '/libraries/exif-js/exif.js' => [],
+      ],
+    ];
+
+  }
+
+  return $libraries;
+}
+
+/**
  * Implements hook_library_info_alter().
  */
 function dropzonejs_library_info_alter(&$libraries, $extension) {
   if ($extension == 'dropzonejs' && \Drupal::moduleHandler()->moduleExists('libraries')) {
     $libraries['dropzonejs']['js'] = ['/' . libraries_get_path('dropzone') . '/dist/min/dropzone.min.js' => []];
     $libraries['dropzonejs']['css']['component'] = ['/' . libraries_get_path('dropzone') . '/dist/min/dropzone.min.css' => []];
+
+    if ($exif_path = libraries_get_path('exif-js')) {
+      $libraries['exif-js']['js'] = ['/' . $exif_path . '/exif.js' => []];
+    }
   }
 }
