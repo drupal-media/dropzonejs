@@ -10,6 +10,16 @@ use Drupal\dropzonejs_eb_widget\Plugin\EntityBrowser\Widget\MediaEntityDropzoneJ
 use Drupal\entity_browser\Entity\EntityBrowser;
 
 /**
+ * Update hook dependencies.
+ */
+function dropzonejs_eb_widget_update_dependencies() {
+  $dependencies['dropzonejs_eb_widget'] = [
+    8202 => ['media_entity' => 8201],
+  ];
+  return $dependencies;
+}
+
+/**
  * Update configurations for configuration key renaming.
  */
 function dropzonejs_eb_widget_update_8201() {
